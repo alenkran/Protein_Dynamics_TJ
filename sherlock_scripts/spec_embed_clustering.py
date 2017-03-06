@@ -1,24 +1,22 @@
 ################################################################################
 # Authors: Min Cheol Kim, Christian Choe
 
-# Description: Performs ISOMAP on msm builder tutorial trajectories,
+# Description: Performs spectral embedding on msm builder tutorial trajectories,
 # clusters in reduced dimension, and saves various clustering/dimentionality
 # reduction products.
 
-# Usage: python isomap_clustering.py -n_neighbors <n_neighbors> -n_components <n_components> -num_clusters <num_clusters> -dataset <dataset label> -sample_rate <sampling rate>
-# n_neighbors is a number of neighbors to use for kernel PCA
-# n_components is components in the ISOMAP space
+# Usage: python spec_embed_clustering.py -n_neighbors <n_neighbors> -n_components <n_components> -num_clusters num_clusters
+# n_neighbors is a number of neighbors
+# n_components is components in the reduced dimension
 # num_clusters is the number of clusters used for clustering
-# dataset is which dataset to use
-# sample_rate is the subsampling rate
 
-# Example: python isomap_clustering.py -n_neighbors 1000 -n_components 1000 -num_clusters 200 -dataset calmodulin -sample_rate 0.1
+# Example: python spec_embed_clustering.py -n_neighbors 30 -n_components 40 -num_clusters 97
 
 # Output: 3 files
 # 1) Cluster centers in XYZ dimension
 # 2) Cluster centers in reduced dimension
 # 3) Cluster assignments
-# 4) ISOMAP coordinates of raw frames
+# 4) Reduced dimension coordinates of raw frames
 # These files are saved with a *_<n_neighbors>_<n_components>_<num_clusters>_.dat naming scheme.
 
 
@@ -39,12 +37,11 @@ import os
 os.chdir(tempfile.mkdtemp())
 
 # Set up ArgumentParser
-parser = ap.ArgumentParser(description='ISOMAP processing script.')
+parser = ap.ArgumentParser(description='Spectral embedding processing script.')
 parser.add_argument('-n_components', action="store", dest='n_components', type=int)
 parser.add_argument('-n_neighbors', action="store", dest='n_neighbors', type=int)
 parser.add_argument('-num_clusters', action="store", dest='num_clusters', type=int, default=97)
 parser.add_argument('-dataset', action='store', dest='which_dataset')
-parser.add_argument('-sample_rate', action='store', dest='sample_rate', type=float)
 args = parser.parse_args()
 
 # Assign argument variables
@@ -52,7 +49,6 @@ n_neighbors = args.n_neighbors
 n_components = args.n_components
 num_clusters = args.num_clusters
 which_dataset = args.which_dataset
-sample_rate = args.sample_rate
 
 # Compile all trajectories
 from msmbuilder.dataset import dataset
@@ -83,7 +79,7 @@ for idx, trajectories in enumerate(xyz):
         frames_bag = trajectories
     if idx != 0:
         frames_bag = frames_bag.join(trajectories)
-        
+    
 temp = xyz[0]
 reference_frame = temp.slice(0, copy=True)
 frames_bag.superpose(reference_frame)
@@ -101,16 +97,13 @@ indices = indices[:desired_num_frames]
 X = X[indices,:]
 
 #apply dimensionality reduction
-X_iso = manifold.Isomap(n_neighbors=n_neighbors, n_components=n_components, n_jobs=-1).fit_transform(X)
-print("Sent to ISOMAP land")
-
-X_iso.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_coordinates_' + ID + '.dat')
-print("Isomap coordinates of raw frames saved")
+X_se = manifold.SpectralEmbedding( n_components=n_components, n_neighbors=n_neighbors).fit_transform(X)
+print("Sent to spectral embedding land")
 
 # use K means to cluster and save data
 from sklearn.cluster import KMeans
-kmeans = KMeans(n_clusters=num_clusters).fit(X_iso)
-print("Clustered in ISOMAP space")
+kmeans = KMeans(n_clusters=num_clusters).fit(X_se)
+print("Clustered in reduced dimension space")
 
 # compute XYZ coordinates of cluster centers
 cluster_centers = np.empty((num_clusters, num_atoms*num_axis), dtype=float)
@@ -119,20 +112,21 @@ for idx in range(num_clusters):
     cluster_centers[idx, :] = X[indices,:].mean(axis=0)
 
 # Combine n_neighbors and n_components to produce an ID
-ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(num_clusters) + '_' + str(sample_rate)
+ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(num_clusters)
 
 # save centroids in XYZ space
-cluster_centers.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clusters_XYZ_' + ID + '.dat')	
+cluster_centers.dump('/scratch/users/mincheol/' + which_dataset + '/spec_embed_out/spec_embed_clusters_XYZ_' + ID + '.dat')	
 print("Cluster centers saved in XYZ coordinates")
 
-# save centroids in ISOMAP space
-kmeans.cluster_centers_.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clusters_RD_' + ID + '.dat')
+# save centroids in reduced dimension
+kmeans.cluster_centers_.dump('/scratch/users/mincheol/' + which_dataset + '/spec_embed_out/spec_embed_clusters_RD_' + ID + '.dat')
 print("Cluster centers saved in reduced dimension")
-
 # save assignments
-kmeans.labels_.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clustering_labels_' + ID + '.dat')
+kmeans.labels_.dump('/scratch/users/mincheol/' + which_dataset + '/spec_embed_out/spec_embed_clustering_labels_' + ID + '.dat')
 print("Clusters assignments saved")
 
-# save the isomap coordinates
+# save the reduced dimension coordinates
+X_se.dump('/scratch/users/mincheol/' + which_dataset + '/spec_embed_out/spec_embed_coordinates_' + ID + '.dat')
+print("Spectral embedding coordinates of raw frames saved")
 
 

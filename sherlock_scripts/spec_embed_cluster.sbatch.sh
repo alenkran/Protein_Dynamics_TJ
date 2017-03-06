@@ -6,11 +6,11 @@
 #SBATCH --job-name=isomap_cluster
 #################  
 #a file for job output, you can check job progress, append the job ID with %j to make it unique
-#SBATCH --output=isomap_cluster_output.%j.out
+#SBATCH --output=spec_embed_cluster_output.%j.out
 
 #################
 # a file for errors from the job
-#SBATCH --error=isomap_cluster_output.%j.err
+#SBATCH --error=spec_embed_cluster_output.%j.err
 
 #################
 #time you think you need; default is 2 hours
@@ -32,10 +32,7 @@
 
 #SBATCH --nodes=1
 
-##################
-# number of cores you are requesting
 #################
-
 # --mem is memory per node; default is 4000 MB per CPU, remember to ask for enough mem to match your CPU request, since 
 # sherlock automatically allocates 8 Gigs of RAM/CPU, if you ask for 8 CPUs you will need 32 Gigs of RAM, so either 
 # leave --mem commented out or request >= to the RAM needed for your CPU request.
@@ -61,8 +58,8 @@
 # otherwise: 
 module load anaconda
 source activate test_env
-srun python isomap_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.01
-srun python isomap_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.05
-srun python isomap_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.1
-srun python isomap_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.5
+srun python spec_embed_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.01
+srun python spec_embed_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.05
+srun python spec_embed_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.1
+srun python spec_embed_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.5
 source deactivate
