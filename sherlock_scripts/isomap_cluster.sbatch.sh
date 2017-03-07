@@ -61,6 +61,7 @@
 # otherwise: 
 module load anaconda
 source activate test_env
-srun python isomap_clustering.py -n_neighbors 50 -n_components 30 -num_clusters 100 -dataset fspeptide -sample_rate 0.1
-srun python isomap_clustering.py -n_neighbors 100 -n_components 100 -num_clusters 150 -dataset calmodulin -sample_rate 0.01
+srun python isomap_clustering.py -n_neighbors 100 -n_components 100 -num_clusters 150 -dataset calmodulin -sample_rate 0.1
+srun python isomap_clustering.py -n_neighbors 100 -n_components 150 -num_clusters 200 -dataset calmodulin -sample_rate 0.3
+srun python isomap_clustering.py -n_neighbors 100 -n_components 200 -num_clusters 200 -dataset calmodulin -sample_rate 0.5
 source deactivate
