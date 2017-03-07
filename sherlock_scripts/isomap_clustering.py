@@ -84,6 +84,7 @@ num_features = num_atoms*num_axis;
 pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
 X = np.concatenate(pre_X)
 X.dump('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ.dat')	
+num_frames = X.shape[0]
 
 # Subsample
 desired_num_frames = int(round(sample_rate*num_frames))
