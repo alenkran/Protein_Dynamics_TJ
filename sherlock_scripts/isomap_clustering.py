@@ -77,21 +77,13 @@ if which_dataset == 'calmodulin':
 # Combine all trajectories into a trajectory "bag"
 import mdtraj as md
 
-frames_bag = []
-for idx, trajectories in enumerate(xyz):
-    if idx == 0:
-        frames_bag = trajectories
-    if idx != 0:
-        frames_bag = frames_bag.join(trajectories)
-        
 temp = xyz[0]
+_, num_atoms, num_axis = temp.xyz.shape
 reference_frame = temp.slice(0, copy=True)
-frames_bag.superpose(reference_frame)
-print("frames bag constructed")
-
-# Format data matrix
-num_frames, num_atoms, num_axis = frames_bag.xyz.shape
-X = np.reshape(frames_bag.xyz, (num_frames, num_atoms*num_axis))
+num_features = num_atoms*num_axis;
+pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
+X = np.concatenate(pre_X)
+X.dump('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ.dat')	
 
 # Subsample
 desired_num_frames = int(round(sample_rate*num_frames))
@@ -101,7 +93,7 @@ indices = indices[:desired_num_frames]
 X = X[indices,:]
 
 #apply dimensionality reduction
-X_iso = manifold.Isomap(n_neighbors=n_neighbors, n_components=n_components, n_jobs=-1).fit_transform(X)
+X_iso = manifold.Isomap(n_neighbors=n_neighbors, n_components=n_components, n_jobs=32).fit_transform(X)
 print("Sent to ISOMAP land")
 
 X_iso.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_coordinates_' + ID + '.dat')

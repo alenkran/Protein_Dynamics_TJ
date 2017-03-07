@@ -6,11 +6,11 @@
 #SBATCH --job-name=isomap_cluster
 #################  
 #a file for job output, you can check job progress, append the job ID with %j to make it unique
-#SBATCH --output=spec_embed_cluster_output.%j.out
+#SBATCH --output=/scratch/users/mincheol/job_outputs/spec_embed_cluster_output.%j.out
 
 #################
 # a file for errors from the job
-#SBATCH --error=spec_embed_cluster_output.%j.err
+#SBATCH --error=/scratch/users/mincheol/job_outputs/spec_embed_cluster_output.%j.err
 
 #################
 #time you think you need; default is 2 hours

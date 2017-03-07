@@ -6,11 +6,11 @@
 #SBATCH --job-name=isomap_cluster
 #################  
 #a file for job output, you can check job progress, append the job ID with %j to make it unique
-#SBATCH --output=isomap_cluster_output.%j.out
+#SBATCH --output=/scratch/users/mincheol/job_outputs/isomap_cluster_output.%j.out
 
 #################
 # a file for errors from the job
-#SBATCH --error=isomap_cluster_output.%j.err
+#SBATCH --error=/scratch/users/mincheol/job_outputs/isomap_cluster_output.%j.err
 
 #################
 #time you think you need; default is 2 hours
@@ -61,8 +61,5 @@
 # otherwise: 
 module load anaconda
 source activate test_env
-srun python isomap_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.01
-srun python isomap_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.05
-srun python isomap_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.1
-srun python isomap_clustering.py -n_neighbors 1500 -n_components 1500 -num_clusters 200 -dataset calmodulin -sample_rate 0.5
+srun python isomap_clustering.py -n_neighbors 50 -n_components 30 -num_clusters 150 -dataset calmodulin -sample_rate 0.001
 source deactivate

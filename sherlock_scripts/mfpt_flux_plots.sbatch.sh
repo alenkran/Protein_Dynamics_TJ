@@ -6,10 +6,10 @@
 #SBATCH --job-name=mfpt_flux_plot
 #################  
 #a file for job output, you can check job progress, append the job ID with %j to make it unique
-#SBATCH --output=mfpt_flux_plot.%j.out
+#SBATCH --output=/scratch/users/mincheol/job_outputs/mfpt_flux_plot.%j.out
 #################
 # a file for errors from the job
-#SBATCH --error=mfpt_flux_plot.%j.err
+#SBATCH --error=/scratch/users/mincheol/job_outputs/mfpt_flux_plot.%j.err
 #################
 #time you think you need; default is 2 hours
 #format could be dd-hh:mm:ss, hh:mm:ss, mm:ss, or mm

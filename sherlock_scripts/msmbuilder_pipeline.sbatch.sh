@@ -6,10 +6,10 @@
 #SBATCH --job-name=msm_pipeline
 #################  
 #a file for job output, you can check job progress, append the job ID with %j to make it unique
-#SBATCH --output=msm_pipeline.%j.out
+#SBATCH --output=/scratch/users/mincheol/job_outputs/msm_pipeline.%j.out
 #################
 # a file for errors from the job
-#SBATCH --error=msm_pipeline.%j.err
+#SBATCH --error=/scratch/users/mincheol/job_outputs/msm_pipeline.%j.err
 #################
 #time you think you need; default is 2 hours
 #format could be dd-hh:mm:ss, hh:mm:ss, mm:ss, or mm
