@@ -54,6 +54,9 @@ num_clusters = args.num_clusters
 which_dataset = args.which_dataset
 sample_rate = args.sample_rate
 
+# Combine n_neighbors and n_components to produce an ID
+ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(num_clusters) + '_' + str(sample_rate)
+
 # Compile all trajectories
 from msmbuilder.dataset import dataset
 xyz = [] # placeholder
@@ -97,6 +100,7 @@ X = X[indices,:]
 X_iso = manifold.Isomap(n_neighbors=n_neighbors, n_components=n_components, n_jobs=32).fit_transform(X)
 print("Sent to ISOMAP land")
 
+# save the isomap coordinates
 X_iso.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_coordinates_' + ID + '.dat')
 print("Isomap coordinates of raw frames saved")
 
@@ -111,9 +115,6 @@ for idx in range(num_clusters):
     indices = (kmeans.labels_ == idx)
     cluster_centers[idx, :] = X[indices,:].mean(axis=0)
 
-# Combine n_neighbors and n_components to produce an ID
-ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(num_clusters) + '_' + str(sample_rate)
-
 # save centroids in XYZ space
 cluster_centers.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clusters_XYZ_' + ID + '.dat')	
 print("Cluster centers saved in XYZ coordinates")
@@ -125,7 +126,4 @@ print("Cluster centers saved in reduced dimension")
 # save assignments
 kmeans.labels_.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clustering_labels_' + ID + '.dat')
 print("Clusters assignments saved")
-
-# save the isomap coordinates
-
 

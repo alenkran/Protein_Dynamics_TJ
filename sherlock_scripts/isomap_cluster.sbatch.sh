@@ -40,7 +40,7 @@
 # sherlock automatically allocates 8 Gigs of RAM/CPU, if you ask for 8 CPUs you will need 32 Gigs of RAM, so either 
 # leave --mem commented out or request >= to the RAM needed for your CPU request.
 
-#SBATCH --mem=1490GB
+#SBATCH --mem=128GB
 
 #################
 
@@ -64,4 +64,8 @@ source activate test_env
 srun python isomap_clustering.py -n_neighbors 100 -n_components 100 -num_clusters 150 -dataset calmodulin -sample_rate 0.01
 srun python isomap_clustering.py -n_neighbors 150 -n_components 200 -num_clusters 150 -dataset calmodulin -sample_rate 0.05
 srun python isomap_clustering.py -n_neighbors 200 -n_components 200 -num_clusters 150 -dataset calmodulin -sample_rate 0.1
+
+srun python isomap_clustering.py -n_neighbors 50 -n_components 30 -num_clusters 100 -dataset fspeptide -sample_rate 1
+srun python isomap_clustering.py -n_neighbors 35 -n_components 40 -num_clusters 100 -dataset fspeptide -sample_rate 1
+srun python isomap_clustering.py -n_neighbors 40 -n_components 50 -num_clusters 100 -dataset fspeptide -sample_rate 1
 source deactivate
