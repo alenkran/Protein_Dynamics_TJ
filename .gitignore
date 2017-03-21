@@ -47,3 +47,4 @@ Temporary Items
 .apdisk
 *.dat
 MSM_Builder_Test/clustering_outputs/msm_clustering_labels.dat
+*.xtc
