@@ -16,6 +16,7 @@
 # Output: 1 table, the clustering statistics plot.
 # These files are saved with a cluster_comp_<n_neighbors>_<n_components>_<num_clusters>_<dataset>_<method>.png naming scheme.
 
+# Must be editted later to incorporate models.
 
 ################################################################################
 
