@@ -31,6 +31,7 @@
 #number of nodes you are requesting, the more you ask for the longer you wait
 
 #SBATCH --nodes=1
+#SBATCH --ntasks=16
 
 ##################
 # number of cores you are requesting
@@ -40,7 +41,7 @@
 # sherlock automatically allocates 8 Gigs of RAM/CPU, if you ask for 8 CPUs you will need 32 Gigs of RAM, so either 
 # leave --mem commented out or request >= to the RAM needed for your CPU request.
 
-#SBATCH --mem=128GB
+#SBATCH --mem=256GB
 
 #################
 
@@ -61,7 +62,5 @@
 # otherwise: 
 module load anaconda
 source activate test_env
-srun python isomap_clustering.py -n_neighbors 100 -n_components 100 -num_clusters 150 -dataset calmodulin -sample_rate 0.1
-srun python isomap_clustering.py -n_neighbors 100 -n_components 150 -num_clusters 200 -dataset calmodulin -sample_rate 0.3
-srun python isomap_clustering.py -n_neighbors 100 -n_components 200 -num_clusters 200 -dataset calmodulin -sample_rate 0.5
+python isomap_clustering.py -n_neighbors 150 -n_components 2 -num_clusters 200 -dataset calmodulin -sample_rate 0.4
 source deactivate

@@ -52,18 +52,5 @@
 # otherwise: 
 module load anaconda
 source activate test_env
-python mfpt_flux_plots.py -n_neighbors 30 -n_components 40 -num_clusters 97 -dataset fspeptide -technique isomap
-python mfpt_flux_plots.py -n_neighbors 30 -n_components 45 -num_clusters 97 -dataset fspeptide -technique isomap
-python mfpt_flux_plots.py -n_neighbors 35 -n_components 40 -num_clusters 97 -dataset fspeptide -technique isomap
-python mfpt_flux_plots.py -n_neighbors 40 -n_components 30 -num_clusters 97 -dataset fspeptide -technique isomap
-
-python mfpt_flux_plots.py -n_neighbors 20 -n_components 35 -num_clusters 97 -dataset fspeptide -technique spec_embed
-python mfpt_flux_plots.py -n_neighbors 20 -n_components 40 -num_clusters 97 -dataset fspeptide -technique spec_embed
-python mfpt_flux_plots.py -n_neighbors 25 -n_components 35 -num_clusters 97 -dataset fspeptide -technique spec_embed
-python mfpt_flux_plots.py -n_neighbors 25 -n_components 40 -num_clusters 97 -dataset fspeptide -technique spec_embed
-python mfpt_flux_plots.py -n_neighbors 30 -n_components 35 -num_clusters 97 -dataset fspeptide -technique spec_embed
-python mfpt_flux_plots.py -n_neighbors 30 -n_components 40 -num_clusters 97 -dataset fspeptide -technique spec_embed
-python mfpt_flux_plots.py -n_neighbors 35 -n_components 35 -num_clusters 97 -dataset fspeptide -technique spec_embed
-python mfpt_flux_plots.py -n_neighbors 35 -n_components 40 -num_clusters 97 -dataset fspeptide -technique spec_embed
-
+python mfpt_flux_plots.py -n_neighbors 100 -n_components 100 -num_clusters 150 -dataset calmodulin -technique isomap -sample_rate 0.1
 source deactivate

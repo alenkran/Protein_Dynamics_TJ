@@ -32,6 +32,8 @@ from msmbuilder.example_datasets import FsPeptide
 import sys
 fs_peptide = FsPeptide()
 fs_peptide.cache()
+import mdtraj as md
+from sklearn.externals import joblib
 
 # additional imports
 import tempfile
@@ -57,73 +59,53 @@ sample_rate = args.sample_rate
 # Combine n_neighbors and n_components to produce an ID
 ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(num_clusters) + '_' + str(sample_rate)
 
-# Compile all trajectories
-from msmbuilder.dataset import dataset
-xyz = [] # placeholder
-if which_dataset == 'fspeptide':
-	# Get data
-	fs_peptide = FsPeptide()
-	fs_peptide.cache()
-	xyz = dataset(fs_peptide.data_dir + "/*.xtc",
-	              topology=fs_peptide.data_dir + '/fs-peptide.pdb',
-	              stride=10)
-	print("{} trajectories".format(len(xyz)))
-	# msmbuilder does not keep track of units! You must keep track of your
-	# data's timestep
-	to_ns = 0.5
-	print("with length {} ns".format(set(len(x)*to_ns for x in xyz)))
-
-if which_dataset == 'calmodulin':
-	xyz = dataset('/scratch/users/mincheol/Trajectories' + '/*.lh5', stride=10)
-	print("{} trajectories".format(len(xyz)))
+# Load appropriate X matrix
+X = np.load('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ.dat')
 
 # Combine all trajectories into a trajectory "bag"
-import mdtraj as md
-
-temp = xyz[0]
-_, num_atoms, num_axis = temp.xyz.shape
-reference_frame = temp.slice(0, copy=True)
-num_features = num_atoms*num_axis;
-pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
-X = np.concatenate(pre_X)
-X.dump('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ.dat')	
 num_frames = X.shape[0]
+num_features = X.shape[1]
 
 # Subsample
 desired_num_frames = int(round(sample_rate*num_frames))
 indices = [i for i in range(num_frames)]
 np.random.shuffle(indices)
 indices = indices[:desired_num_frames]
-X = X[indices,:]
+X_sampled = X[indices,:]
 
-#apply dimensionality reduction
-X_iso = manifold.Isomap(n_neighbors=n_neighbors, n_components=n_components, n_jobs=32).fit_transform(X)
-print("Sent to ISOMAP land")
+#apply dimensionality reduction, fit the model using sample data and transform all other frames as well
+model = manifold.Isomap(n_neighbors=n_neighbors, n_components=n_components, n_jobs=-1)
+X_iso_sampled = model.fit(X_sampled)
+joblib.dump(model, '/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_model_' + ID + '.pkl')
+print('ISOMAP Model Saved')
 
-# save the isomap coordinates
-X_iso.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_coordinates_' + ID + '.dat')
-print("Isomap coordinates of raw frames saved")
+# X_iso = model.transform(X)
+# print("Sent to ISOMAP land")
 
-# use K means to cluster and save data
-from sklearn.cluster import KMeans
-kmeans = KMeans(n_clusters=num_clusters).fit(X_iso)
-print("Clustered in ISOMAP space")
+# # save the isomap coordinates
+# X_iso.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_coordinates_' + ID + '.dat')
+# print("Isomap coordinates of raw frames saved")
 
-# compute XYZ coordinates of cluster centers
-cluster_centers = np.empty((num_clusters, num_atoms*num_axis), dtype=float)
-for idx in range(num_clusters):
-    indices = (kmeans.labels_ == idx)
-    cluster_centers[idx, :] = X[indices,:].mean(axis=0)
+# # use K means to cluster and save data
+# from sklearn.cluster import KMeans
+# kmeans = KMeans(n_clusters=num_clusters).fit(X_iso)
+# print("Clustered in ISOMAP space")
 
-# save centroids in XYZ space
-cluster_centers.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clusters_XYZ_' + ID + '.dat')	
-print("Cluster centers saved in XYZ coordinates")
+# # compute XYZ coordinates of cluster centers
+# cluster_centers = np.empty((num_clusters, num_features), dtype=float)
+# for idx in range(num_clusters):
+#     indices = (kmeans.labels_ == idx)
+#     cluster_centers[idx, :] = X[indices,:].mean(axis=0)
 
-# save centroids in ISOMAP space
-kmeans.cluster_centers_.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clusters_RD_' + ID + '.dat')
-print("Cluster centers saved in reduced dimension")
+# # save centroids in XYZ space
+# cluster_centers.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clusters_XYZ_' + ID + '.dat')	
+# print("Cluster centers saved in XYZ coordinates")
 
-# save assignments
-kmeans.labels_.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clustering_labels_' + ID + '.dat')
-print("Clusters assignments saved")
+# # save centroids in ISOMAP space
+# kmeans.cluster_centers_.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clusters_RD_' + ID + '.dat')
+# print("Cluster centers saved in reduced dimension")
+
+# # save assignments
+# kmeans.labels_.dump('/scratch/users/mincheol/' + which_dataset + '/isomap_out/isomap_clustering_labels_' + ID + '.dat')
+# print("Clusters assignments saved")
 
