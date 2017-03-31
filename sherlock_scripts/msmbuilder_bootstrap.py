@@ -46,7 +46,7 @@ if which_dataset == 'fspeptide':
     data_dir = '/scratch/users/mincheol/' + which_dataset + '/trajectories/temp'
     xyz = dataset(data_dir + "/*.xtc",
                   topology=fs_peptide.data_dir + '/fs-peptide.pdb',
-                  stride=1)
+                  stride=10)
     print("{} trajectories".format(len(xyz)))
     # msmbuilder does not keep track of units! You must keep track of your
     # data's timestep
@@ -119,5 +119,7 @@ idx_sort = msm.populations_.argsort()[-len(msm.populations_):][::-1]
 lv = lv[idx_sort,:]
 
 # Save the eigenvectors and eigvenvalues
+print(filename)
 v.dump('/scratch/users/mincheol/' + which_dataset + '/trajectories/' + 'v_' + filename + '.dat')
 lv.dump('/scratch/users/mincheol/' + which_dataset + '/trajectories/' + 'lv_' + filename + '.dat')
+print('\ndone\n')

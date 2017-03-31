@@ -19,11 +19,11 @@
 # REMOVE "normal" and set to "long" if you want your job to run longer than 48 hours,  
 # NOTE- in the hns partition the default max run time is 7 days , so you wont need to include qos
  
-#SBATCH --qos=bigmem
+#SBATCH --qos=normal
 
 # We are submitting to the dev partition, there are several on sherlock: normal, gpu, owners, hns, bigmem (jobs requiring >64Gigs RAM) 
 # 
-#SBATCH -p bigmem 
+#SBATCH -p normal
 #################
 #number of nodes you are requesting, the more you ask for the longer you wait
 #SBATCH --nodes=1
@@ -32,7 +32,7 @@
 # sherlock automatically allocates 8 Gigs of RAM/CPU, if you ask for 8 CPUs you will need 32 Gigs of RAM, so either 
 # leave --mem commented out or request >= to the RAM needed for your CPU request.
  
-#SBATCH --mem=128GB
+#SBATCH --mem=4GB
 #################
 
 # Have SLURM send you an email when the job ends or fails, careful, the email could end up in your clutter folder
@@ -54,53 +54,56 @@ module load anaconda
 source activate test_env
 
 # create dictionary
-# knn_sim_dict.py -dataset fspeptide -cluster_degree 5 -frame_degree 5
+# python knn_sim_dict.py -dataset fspeptide -cluster_degree 4 -frame_degree 4
+
+python knn_sim_gen.py -dataset fspeptide -num_traj 1000 -traj_length 100 -cluster_degree 4 -frame_degree 4
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
 # generate 1000 trajectories with 10 frames each
-python knn_sim_gen.py -dataset fspeptide -num_traj 1000 -traj_length 10 -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+#python knn_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 10 -cluster_degree 5 -frame_degree 5
+#python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 1000 trajectories with 100 frames each
-python knn_sim_gen.py -dataset fspeptide -num_traj 1000 -traj_length 100 -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 1000 trajectories with 100 frames each
+# python knn_sim_gen.py -dataset fspeptide -num_traj 1000 -traj_length 100 -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 1000 trajectories with 1000 frames each
-python knn_sim_gen.py -dataset fspeptide -num_traj 1000 -traj_length 1000 -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 1000 trajectories with 1000 frames each
+# python knn_sim_gen.py -dataset fspeptide -num_traj 1000 -traj_length 1000 -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 10000 trajectories with 10 frames each
-python knn_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 10 -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 10000 trajectories with 10 frames each
+# python knn_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 10 -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 10000 trajectories with 100 frames each
-python knn_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 100 -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 10000 trajectories with 100 frames each
+# python knn_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 100 -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 10000 trajectories with 1000 frames each
-python knn_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 1000 -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 10000 trajectories with 1000 frames each
+# python knn_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 1000 -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 28,000 trajectories with 10 frames each
-python knn_sim_gen.py -dataset fspeptide -traj_length 10 -all True -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 28,000 trajectories with 10 frames each
+# python knn_sim_gen.py -dataset fspeptide -traj_length 10 -all True -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 28,000 trajectories with 100 frames each
-python knn_sim_gen.py -dataset fspeptide -traj_length 100 -all True -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 28,000 trajectories with 100 frames each
+# python knn_sim_gen.py -dataset fspeptide -traj_length 100 -all True -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 28,000 trajectories with 1000 frames each
-python knn_sim_gen.py -dataset fspeptide -traj_length 1000 -all True -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 28,000 trajectories with 1000 frames each
+# python knn_sim_gen.py -dataset fspeptide -traj_length 1000 -all True -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 50,000 trajectories with 10 frames each
-python knn_sim_gen.py -dataset fspeptide -num_traj 50000 -traj_length 10 -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 50,000 trajectories with 10 frames each
+# python knn_sim_gen.py -dataset fspeptide -num_traj 50000 -traj_length 10 -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# generate 50,000 trajectories with 100 frames each
-python knn_sim_gen.py -dataset fspeptide -num_traj 50000 -traj_length 100 -cluster_degree 5 -frame_degree 5
-python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+# # generate 50,000 trajectories with 100 frames each
+# python knn_sim_gen.py -dataset fspeptide -num_traj 50000 -traj_length 100 -cluster_degree 5 -frame_degree 5
+# python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
-# delete all the trajectories
-python knn_sim_gen.py -dataset fspeptide -num_traj 10 -traj_length 10 -cluster_degree 5 -frame_degree 5
+# # delete all the trajectories
+# python knn_sim_gen.py -dataset fspeptide -num_traj 10 -traj_length 10 -cluster_degree 5 -frame_degree 5
 
 source deactivate

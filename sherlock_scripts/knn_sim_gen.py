@@ -35,6 +35,7 @@ parser.add_argument('-iso_ID', action='store', dest='iso_ID', type=str, default=
 parser.add_argument('-cluster_degree', action='store', dest='cluster_degree', type = int, default=5)
 parser.add_argument('-frame_degree', action='store', dest='frame_degree', type = int, default=5)
 parser.add_argument('-all', action='store', dest='all', type=bool, default=False)
+parser.add_argument('-random', action='store', dest='random', type=bool, default=False)
 args = parser.parse_args()
 
 # Assignment arguments
@@ -46,6 +47,7 @@ frame_degree = args.frame_degree
 num_traj = args.num_clusters
 traj_length = args.traj_length
 sample_all = args.all
+sample_rand = args.random
 
 # Obtain the raw X,Y,Z coordinates of the trajectories
 xyz = [] # placeholder
@@ -55,7 +57,7 @@ if which_dataset == 'fspeptide':
     fs_peptide.cache()
     xyz = dataset(fs_peptide.data_dir + "/*.xtc",
                   topology=fs_peptide.data_dir + '/fs-peptide.pdb',
-                  stride=1)
+                  stride=10)
     print("{} trajectories".format(len(xyz)))
     # msmbuilder does not keep track of units! You must keep track of your
     # data's timestep
@@ -109,22 +111,23 @@ def random_frame(neighbors):
     for (frame, dist) in neighbors:
         prob.append(dist)
         choice.append(frame)
-    prob = np.array(prob)/sum(prob)
+    prob = 1/np.array(prob)
+    prob = prob/sum(prob)
+    #prob = np.array(prob)/sum(prob) this is wrong... the farther it is the higher the change?
     return np.random.choice(choice, p = prob)
 
-def generate_md_traj(graph_dict, X, folder_name, num_traj, length=-1, start=-1, complete=False):
+def generate_md_traj(graph_dict, X, folder_name, num_traj, length=-1, start=-1, complete=False, random=False):
     if length == -1:
         length = 1000
     if complete:
-        num_traj = len(edges)
+        num_traj = len(graph_dict)
 
     seed = np.linspace(0, len(graph_dict)-1, num_traj)
     for k in range(0,num_traj):
-        if start == -1:
-            #start = np.random.randint(0, len(graph_dict))
+        if random:
+            start = np.random.randint(0, len(graph_dict))
+        else:
             start = int(seed[k])
-        if complete:
-            start = k
 
         traj = [start]
         for i in range(0, length-1):
@@ -138,4 +141,4 @@ def generate_md_traj(graph_dict, X, folder_name, num_traj, length=-1, start=-1, 
 
 fs_peptide = FsPeptide()
 traj_folder = '/scratch/users/mincheol/' + which_dataset + '/trajectories/temp/'
-generate_md_traj(edges, X, traj_folder, num_traj, length=traj_length, start=-1, complete=sample_all)
+generate_md_traj(edges, X, traj_folder, num_traj, length=traj_length, start=-1, complete=sample_all, random=sample_rand)
