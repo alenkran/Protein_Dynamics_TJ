@@ -52,5 +52,9 @@
 # otherwise: 
 module load anaconda
 source activate test_env
+python knn_sim_dict.py -dataset fspeptide -cluster_degree 2 -frame_degree 2
+python knn_sim_dict.py -dataset fspeptide -cluster_degree 3 -frame_degree 3
+python knn_sim_dict.py -dataset fspeptide -cluster_degree 4 -frame_degree 4
 python knn_sim_dict.py -dataset fspeptide -cluster_degree 5 -frame_degree 5
+python knn_sim_dict.py -dataset fspeptide -cluster_degree 6 -frame_degree 6
 source deactivate
