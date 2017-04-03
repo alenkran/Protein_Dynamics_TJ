@@ -49,18 +49,19 @@ ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(sample_rate)
 
 # Load appropriate X matrix
 X = np.load('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ.dat')
-
+print('Raw data loaded')
 # Load the appropriate model 
 model = joblib.load('/scratch/users/mincheol/' + which_dataset + '/models/' + method + '_model_' + ID + '.pkl')
-
+print('Model loaded')
 # Transform X matrix in batches
-X_rd = np.array((0,n_components))
+X_rd = np.empty((X.shape[0], n_components))
 num_batches = 100
-batch_size = X.shape[0]/num_batches # size of each batch
+batch_size = int(X.shape[0]/num_batches) # size of each batch
 for batch in range(num_batches+1):
 	start_idx = batch * batch_size
 	end_idx = (batch + 1)*batch_size if (batch + 1)*batch_size < X.shape[0] else X.shape[0]
-	X_rd = np.concatenate([X_rd, model.transform(X[start_idx:end_idx, :])])
+	if start_idx != end_idx:
+		X_rd[start_idx:end_idx, :] = model.transform(X[start_idx:end_idx,:])
 
 # Saved X in reduced dimension
 X_rd.dump('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.dat')

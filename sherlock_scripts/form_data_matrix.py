@@ -54,7 +54,7 @@ if which_dataset == 'fspeptide':
 	print("with length {} ns".format(set(len(x)*to_ns for x in xyz)))
 
 if which_dataset == 'calmodulin':
-	xyz = dataset('/scratch/users/mincheol/Trajectories' + '/*.lh5', stride=10)
+	xyz = dataset('/scratch/users/mincheol/Trajectories' + '/*.lh5')
 	print("{} trajectories".format(len(xyz)))
 
 # Combine all trajectories into a trajectory "bag"
