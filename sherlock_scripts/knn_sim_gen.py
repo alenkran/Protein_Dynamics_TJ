@@ -34,7 +34,6 @@ parser.add_argument('-dataset', action='store', dest='which_dataset')
 parser.add_argument('-iso_ID', action='store', dest='iso_ID', type=str, default='30_40_97')
 parser.add_argument('-cluster_degree', action='store', dest='cluster_degree', type = int, default=5)
 parser.add_argument('-frame_degree', action='store', dest='frame_degree', type = int, default=5)
-parser.add_argument('-all', action='store', dest='all', type=bool, default=False)
 parser.add_argument('-random', action='store', dest='random', type=bool, default=False)
 args = parser.parse_args()
 
@@ -46,7 +45,6 @@ frame_degree = args.frame_degree
 
 num_traj = args.num_clusters
 traj_length = args.traj_length
-sample_all = args.all
 sample_rand = args.random
 
 # Obtain the raw X,Y,Z coordinates of the trajectories
@@ -116,12 +114,7 @@ def random_frame(neighbors):
     #prob = np.array(prob)/sum(prob) this is wrong... the farther it is the higher the change?
     return np.random.choice(choice, p = prob)
 
-def generate_md_traj(graph_dict, X, folder_name, num_traj, length=-1, start=-1, complete=False, random=False):
-    if length == -1:
-        length = 1000
-    if complete:
-        num_traj = len(graph_dict)
-
+def generate_md_traj(graph_dict, X, folder_name, num_traj, length, random=False):
     seed = np.linspace(0, len(graph_dict)-1, num_traj)
     for k in range(0,num_traj):
         if random:
@@ -141,4 +134,4 @@ def generate_md_traj(graph_dict, X, folder_name, num_traj, length=-1, start=-1, 
 
 fs_peptide = FsPeptide()
 traj_folder = '/scratch/users/mincheol/' + which_dataset + '/trajectories/temp/'
-generate_md_traj(edges, X, traj_folder, num_traj, length=traj_length, start=-1, complete=sample_all, random=sample_rand)
+generate_md_traj(edges, X, traj_folder, num_traj, traj_length, random=sample_rand)

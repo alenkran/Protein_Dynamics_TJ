@@ -23,7 +23,6 @@ from msmbuilder.dataset import dataset
 import mdtraj as md
 import tempfile
 import os
-import random
 
 # Process arguments
 parser = ap.ArgumentParser(description='MSMBuilder comparions.')
@@ -46,7 +45,7 @@ if which_dataset == 'fspeptide':
     data_dir = '/scratch/users/mincheol/' + which_dataset + '/trajectories/temp'
     xyz = dataset(data_dir + "/*.xtc",
                   topology=fs_peptide.data_dir + '/fs-peptide.pdb',
-                  stride=10)
+                  stride=1) #stride is 1 for running on the bootstrapped trajectories!
     print("{} trajectories".format(len(xyz)))
     # msmbuilder does not keep track of units! You must keep track of your
     # data's timestep
@@ -63,7 +62,6 @@ diheds = xyz.fit_transform_with(featurizer, 'diheds/', fmt='dir-npy')
 
 #tICA
 from msmbuilder.decomposition import tICA
-random.seed(0)
 tica_model = tICA(lag_time=2, n_components=4)
 # fit and transform can be done in seperate steps:
 tica_model = diheds.fit_with(tica_model)
@@ -71,10 +69,10 @@ tica_trajs = diheds.transform_with(tica_model, 'ticas/', fmt='dir-npy')
 
 txx = np.concatenate(tica_trajs)
 
-# clustering
+# clustering: can change hyperparameters
 from msmbuilder.cluster import MiniBatchKMeans
-random.seed(0)
-clusterer = MiniBatchKMeans(n_clusters=num_clusters)
+#clusterer = MiniBatchKMeans(n_clusters=num_clusters)
+clusterer = MiniBatchKMeans(n_clusters=num_clusters, max_no_improvement=1000, batch_size=num_clusters*10)
 clustered_trajs = tica_trajs.fit_transform_with(
     clusterer, 'kmeans/', fmt='dir-npy'
 )
@@ -119,7 +117,32 @@ idx_sort = msm.populations_.argsort()[-len(msm.populations_):][::-1]
 lv = lv[idx_sort,:]
 
 # Save the eigenvectors and eigvenvalues
-print(filename)
 v.dump('/scratch/users/mincheol/' + which_dataset + '/trajectories/' + 'v_' + filename + '.dat')
 lv.dump('/scratch/users/mincheol/' + which_dataset + '/trajectories/' + 'lv_' + filename + '.dat')
+
+# Save video of 1st tICA
+# First organize data into rows
+temp = xyz[0]
+_, num_atoms, num_axis = temp.xyz.shape
+reference_frame = temp.slice(0, copy=True)
+num_features = num_atoms*num_axis;
+pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
+X = np.concatenate(pre_X) # Each row contains the raw data of the corresponding frame
+
+# Sample along the 1st tICA coordinate
+import mdtraj as md
+first_tICA = txx[:,0]
+idx_sort = first_tICA.argsort()[-len(first_tICA):][::-1]
+sample_rate = int(len(X)/3000) # sample only 3000 frames equally spaced apart
+traj = idx_sort[::sample_rate]
+tICA_traj = np.reshape(X[traj,:], (len(traj), len(X[0])/3, 3))
+
+if which_dataset == 'fspeptide':
+    md_traj = md.Trajectory(tICA_traj, md.load(fs_peptide.data_dir + '/fs-peptide.pdb').topology)
+if which_dataset == 'calmodulin':
+    print('No data here...')
+
+md_traj.save_xtc('/scratch/users/mincheol/' + which_dataset + '/trajectories/' + 'tICA_traj_' + filename + '.xtc')
+
+print(filename)
 print('\ndone\n')

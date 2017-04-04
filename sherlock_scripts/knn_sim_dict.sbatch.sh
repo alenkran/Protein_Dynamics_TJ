@@ -13,7 +13,7 @@
 #################
 #time you think you need; default is 2 hours
 #format could be dd-hh:mm:ss, hh:mm:ss, mm:ss, or mm
-#SBATCH --time=2:00:00
+#SBATCH --time=10:00:00
 #################
 #Quality of Service (QOS); think of it as job priority, there is also --qos=long for with a max job length of 7 days, qos normal is 48 hours.
 # REMOVE "normal" and set to "long" if you want your job to run longer than 48 hours,  
@@ -52,9 +52,8 @@
 # otherwise: 
 module load anaconda
 source activate test_env
-python knn_sim_dict.py -dataset fspeptide -cluster_degree 2 -frame_degree 2
-python knn_sim_dict.py -dataset fspeptide -cluster_degree 3 -frame_degree 3
-python knn_sim_dict.py -dataset fspeptide -cluster_degree 4 -frame_degree 4
-python knn_sim_dict.py -dataset fspeptide -cluster_degree 5 -frame_degree 5
-python knn_sim_dict.py -dataset fspeptide -cluster_degree 6 -frame_degree 6
+python knn_sim_dict.py -dataset fspeptide -cluster_degree 12 -frame_degree 12
+python knn_sim_dict.py -dataset fspeptide -cluster_degree 14 -frame_degree 14
+python knn_sim_dict.py -dataset fspeptide -cluster_degree 16 -frame_degree 16
+python knn_sim_dict.py -dataset fspeptide -cluster_degree 18 -frame_degree 18
 source deactivate
