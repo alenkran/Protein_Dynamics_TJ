@@ -106,8 +106,11 @@ for i in range(0,cluster_num):
             temp[j] = np.linalg.norm(iso_coord[frame_i]-iso_coord[frame_j]) #edjes are based on isomap distances
         temp[i] = np.nan
         # find the n nearest frames to frame_i
-        nearest = np.argpartition(temp, frame_degree)[:frame_degree]
-        prob = 1/temp[nearest]
+        if frame_degree == 0:
+            prob = 1/temp
+        else:
+            nearest = np.argpartition(temp, frame_degree)[:frame_degree]
+            prob = 1/temp[nearest]
         prob = prob/sum(prob)
         prob = np.char.mod('%.6f', prob) # convert probabilities to string to save as json
         neighbor = np.char.mod('%d', all_frame[nearest]) # convert to string to save as json

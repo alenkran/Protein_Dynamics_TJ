@@ -54,7 +54,7 @@ module load anaconda
 source activate test_env
 
 # Make sure all the dictionaries are created beforehand!
-python knn_sim_dict.py -dataset fspeptide -cluster_degree 10 -frame_degree 20
+python knn_sim_dict.py -dataset fspeptide -cluster_degree 10 -frame_degree 0
 
 # generate 300 trajectories with 100 frames each
 python knn_sim_gen.py -dataset fspeptide -num_traj 300 -traj_length 100 -cluster_degree 10 -frame_degree 20
