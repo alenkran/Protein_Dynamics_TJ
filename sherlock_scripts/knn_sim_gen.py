@@ -103,18 +103,17 @@ for item in test:
 
 
 # Generate frame orders
-def random_frame(neighbors):
+# The old functions do not sample smartly. Instead they just sample randomly with no bias
+# in starting seed
+def random_frame_old(neighbors):
     prob = []
     choice = []
     for (frame, dist) in neighbors:
         prob.append(dist)
         choice.append(frame)
-    prob = 1/np.array(prob)
-    prob = prob/sum(prob)
-    #prob = np.array(prob)/sum(prob) this is wrong... the farther it is the higher the change?
     return np.random.choice(choice, p = prob)
 
-def generate_md_traj(graph_dict, X, folder_name, num_traj, length, random=False):
+def generate_md_traj_old(graph_dict, X, folder_name, num_traj, length, random=False):
     seed = np.linspace(0, len(graph_dict)-1, num_traj)
     for k in range(0,num_traj):
         if random:
@@ -132,6 +131,36 @@ def generate_md_traj(graph_dict, X, folder_name, num_traj, length, random=False)
         filename = which_dataset + '_sim_' + str(cluster_degree) + '_' + str(frame_degree) + '_' + str(k+1) + '.xtc'
         md_traj.save_xtc(folder_name + filename)
 
-fs_peptide = FsPeptide()
+# These functions are the smarter bootstrap trajectory generators
+# They sample smartly (trying to sample across the whole space more quickly)
+def random_frame_smart(neighbors, choices):
+    prob = []
+    choice = []
+    for (frame, dist) in neighbors:
+        if frame in choices:
+            choices.remove(frame)
+        prob.append(dist)
+        choice.append(frame)
+    return np.random.choice(choice, p = prob)
+
+def generate_md_traj_smart(graph_dict, X, folder_name, num_traj, length):
+    choices = set()
+    for k in range(0,num_traj):
+        if len(choices) == 0:
+            choices = set(range(len(X)))
+        start = random.sample(choices, 1)[0]
+        choices.remove(start)
+        traj = [start]
+        
+        for i in range(0, length-1):
+            neighbor = graph_dict[traj[i]]
+            traj.append(random_frame_smart(neighbor, choices))
+
+        our_traj = np.reshape(X[traj,:], (len(traj), len(X[0])/3, 3))
+        md_traj = md.Trajectory(our_traj, md.load(fs_peptide.data_dir + '/fs-peptide.pdb').topology)
+        filename = which_dataset + '_sim_' + str(cluster_degree) + '_' + str(frame_degree) + '_' + str(k+1) + '.xtc'
+        md_traj.save_xtc(folder_name + filename)
+
 traj_folder = '/scratch/users/mincheol/' + which_dataset + '/trajectories/temp/'
-generate_md_traj(edges, X, traj_folder, num_traj, traj_length, random=sample_rand)
+#generate_md_traj_old(edges, X, traj_folder, num_traj, traj_length, random=sample_rand)
+generate_md_traj_smart(edges, X, traj_folder, num_traj, traj_length)

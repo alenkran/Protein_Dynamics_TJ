@@ -91,7 +91,6 @@ print(cluster_adj)
 # create a dictionary that describes the connections of all the frames
 edges = {}
 for i in range(0,cluster_num):
-    print(i)
     cluster_frame = np.where(iso_label == i)[0] #get index of all frames in cluster i
     
     neighbor_cluster = np.where(cluster_adj[i])[0] #find connected clusters to cluster i
@@ -108,19 +107,18 @@ for i in range(0,cluster_num):
         temp[i] = np.nan
         # find the n nearest frames to frame_i
         nearest = np.argpartition(temp, frame_degree)[:frame_degree]
-        edges[frame_i] = [(all_frame[idx], temp[idx])for idx in nearest]
+        prob = 1/temp[nearest]
+        prob = prob/sum(prob)
+        prob = np.char.mod('%.6f', prob) # convert probabilities to string to save as json
+        neighbor = np.char.mod('%d', all_frame[nearest]) # convert to string to save as json
+        edges[int(frame_i)] = zip(all_frame[nearest], prob)
 
 # save the dictionary
-temp = {}
-for key, value in edges.items(): # not iteritems() since it's python 3.x
-    temp[str(key)] = [(str(f),str(x))for f,x in value]
-
 import json
 
 foldername = '/scratch/users/mincheol/' + which_dataset + '/trajectories/'
-#foldername = '/scratch/users/cachoe/' + which_dataset + '/trajectories/'
 dict_filename = 'dict_' + which_dataset + '_' + str(cluster_degree) + '_' + str(frame_degree) + '_iso_' + ID +'.json'
 
 with open(foldername + dict_filename, 'w') as fp:
-    json.dump(temp, fp)
+    json.dump(edges, fp)
 
