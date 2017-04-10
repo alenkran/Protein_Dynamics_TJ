@@ -29,7 +29,7 @@ import os
 os.chdir(tempfile.mkdtemp())
 
 # Set up ArgumentParser
-parser = ap.ArgumentParser(description='Fitting model script.')
+parser = ap.ArgumentParser(description='Apply dimension reduction script.')
 parser.add_argument('-method', action="store", dest='method')
 parser.add_argument('-n_components', action="store", dest='n_components', type=int)
 parser.add_argument('-n_neighbors', action="store", dest='n_neighbors', type=int)
@@ -55,7 +55,7 @@ model = joblib.load('/scratch/users/mincheol/' + which_dataset + '/models/' + me
 print('Model loaded')
 # Transform X matrix in batches
 X_rd = np.empty((X.shape[0], n_components))
-num_batches = 100
+num_batches = 1000
 batch_size = int(X.shape[0]/num_batches) # size of each batch
 for batch in range(num_batches+1):
 	start_idx = batch * batch_size
