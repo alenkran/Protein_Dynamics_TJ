@@ -4,16 +4,16 @@
 # Description: Creates a dictionary which can be used to geerate simulations of md 
 # trajectories given a dataset using isomap
 
-# Usage: python knn_sim_dict.py -dataset <dataset> -cluster_degree <cluster_degree>
+# Usage: python boot_sim_dict.py -dataset <dataset> -cluster_degree <cluster_degree>
 # -frame_degree <frame_degree> -n_neighbors <n_neighbors> -n_components <n_components> 
 # -num_clusters <num_clusters>
 # cluster_degree is the number of clusters that are reachable given any cluster
 # frame_degree is the number of frames that are reachable given any frame
-# n_neighbors is a number of neighbors to use for kernel PCA
+# n_neighbors is a number of neighbors used in the ISOMAP space
 # n_components is components in the ISOMAP space
 # num_clusters is the number of clusters used for clustering
 
-# Example: python knn_sim_dict.py -dataset fspeptide
+# Example: python boot_sim_dict.py -dataset fspeptide
 
 # Outputs: dictionary to create knn simulations
 
@@ -107,19 +107,20 @@ for i in range(0,cluster_num):
         temp[i] = np.nan
         # find the n nearest frames to frame_i
         if frame_degree == 0:
-            prob = 1/temp
+            n_frame = temp.shape[0]-1
+            nearest = np.argpartition(temp, n_frame)[:n_frame]
         else:
             nearest = np.argpartition(temp, frame_degree)[:frame_degree]
-            prob = 1/temp[nearest]
+        prob = 1/temp[nearest]
         prob = prob/sum(prob)
-        prob = np.char.mod('%.6f', prob) # convert probabilities to string to save as json
-        neighbor = np.char.mod('%d', all_frame[nearest]) # convert to string to save as json
-        edges[int(frame_i)] = zip(all_frame[nearest], prob)
+        neighbor = all_frame[nearest]
+        neighbor = np.char.mod('%d', neighbor) # convert to string to save as json
+        edges[str(frame_i)] = list(zip(neighbor, prob))
 
 # save the dictionary
 import json
 
-foldername = '/scratch/users/mincheol/' + which_dataset + '/trajectories/'
+foldername = '/scratch/users/mincheol/' + which_dataset + '/dictionary/'
 dict_filename = 'dict_' + which_dataset + '_' + str(cluster_degree) + '_' + str(frame_degree) + '_iso_' + ID +'.json'
 
 with open(foldername + dict_filename, 'w') as fp:

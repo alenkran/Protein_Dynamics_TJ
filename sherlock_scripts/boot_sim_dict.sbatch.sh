@@ -3,17 +3,17 @@
 #all commands that start with SBATCH contain commands that are just used by SLURM for scheduling
 #################
 #set a job name  
-#SBATCH --job-name=knn_sim_gen
+#SBATCH --job-name=boot_sim_dict
 #################  
 #a file for job output, you can check job progress, append the job ID with %j to make it unique
-#SBATCH --output=/scratch/users/mincheol/job_outputs/knn_sim_gen.%j.out
+#SBATCH --output=/scratch/users/cachoe/job_outputs/boot_sim_dict.%j.out
 #################
 # a file for errors from the job
-#SBATCH --error=/scratch/users/mincheol/job_outputs/knn_sim_gen.%j.err
+#SBATCH --error=/scratch/users/cachoe/job_outputs/boot_sim_dict.%j.err
 #################
 #time you think you need; default is 2 hours
 #format could be dd-hh:mm:ss, hh:mm:ss, mm:ss, or mm
-#SBATCH --time=2:00:00
+#SBATCH --time=12:00:00
 #################
 #Quality of Service (QOS); think of it as job priority, there is also --qos=long for with a max job length of 7 days, qos normal is 48 hours.
 # REMOVE "normal" and set to "long" if you want your job to run longer than 48 hours,  
@@ -32,7 +32,7 @@
 # sherlock automatically allocates 8 Gigs of RAM/CPU, if you ask for 8 CPUs you will need 32 Gigs of RAM, so either 
 # leave --mem commented out or request >= to the RAM needed for your CPU request.
  
-#SBATCH --mem=4GB
+#SBATCH --mem=60GB
 #################
 
 # Have SLURM send you an email when the job ends or fails, careful, the email could end up in your clutter folder
@@ -52,5 +52,13 @@
 # otherwise: 
 module load anaconda
 source activate test_env
-python knn_sim_gen.py -dataset fspeptide -iso_ID '30_40_97' -num_traj 10 -traj_length 50 -all False
+python boot_sim_dict.py -dataset fspeptide -cluster_degree 3 -frame_degree 3
+python boot_sim_dict.py -dataset fspeptide -cluster_degree 3 -frame_degree 0
+python boot_sim_dict.py -dataset fspeptide -cluster_degree 4 -frame_degree 4
+python boot_sim_dict.py -dataset fspeptide -cluster_degree 5 -frame_degree 5
+python boot_sim_dict.py -dataset fspeptide -cluster_degree 5 -frame_degree 0
+python boot_sim_dict.py -dataset fspeptide -cluster_degree 10 -frame_degree 10
+python boot_sim_dict.py -dataset fspeptide -cluster_degree 10 -frame_degree 0
+python boot_sim_dict.py -dataset fspeptide -cluster_degree 15 -frame_degree 15
+python boot_sim_dict.py -dataset fspeptide -cluster_degree 20 -frame_degree 20
 source deactivate

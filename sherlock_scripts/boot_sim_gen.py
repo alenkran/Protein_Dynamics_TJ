@@ -4,7 +4,7 @@
 # Description: Generates simulations of md trajectories given a dataset using isomap
 # distances
 
-# Usage: python knn_simulation_generator.py -dataset <dataset> -num_traj <num_traj>
+# Usage: python boot_simulation_generator.py -dataset <dataset> -num_traj <num_traj>
 # -traj_length <traj_length> -n_cluster <n_cluster> -n_neighbor <n_neighbor>
 # num_traj is the number of trajectories to generate
 # traj_length is the length of each trajectory (number of frames)
@@ -12,7 +12,7 @@
 # frame_degree is the number of frames that are reachable given any frame
 # ID is the identification of the original isomap used. Follows the format 'X_Y_Z'
 
-# Example: python knn_sim_gen.py -dataset fspeptide -ID '30_40_97' -num_traj 50 -traj_length 50
+# Example: python boot_sim_gen.py -dataset fspeptide -ID '30_40_97' -num_traj 50 -traj_length 50
 
 # Outputs: md trajectory files with .xtc format
 
@@ -25,6 +25,7 @@ import scipy as scipy
 import argparse as ap
 from msmbuilder.dataset import dataset
 import mdtraj as md
+import random
 
 # Process arguments
 parser = ap.ArgumentParser(description='knn simulation generator.')
@@ -48,34 +49,10 @@ traj_length = args.traj_length
 sample_rand = args.random
 
 # Obtain the raw X,Y,Z coordinates of the trajectories
-xyz = [] # placeholder
-if which_dataset == 'fspeptide':
-    # Get data
-    fs_peptide = FsPeptide()
-    fs_peptide.cache()
-    xyz = dataset(fs_peptide.data_dir + "/*.xtc",
-                  topology=fs_peptide.data_dir + '/fs-peptide.pdb',
-                  stride=10)
-    print("{} trajectories".format(len(xyz)))
-    # msmbuilder does not keep track of units! You must keep track of your
-    # data's timestep
-    to_ns = 0.5
-    print("with length {} ns".format(set(len(x)*to_ns for x in xyz)))
-
-if which_dataset == 'calmodulin':
-    xyz = dataset('/scratch/users/mincheol/Trajectories' + '/*.lh5', stride=10)
-    print("{} trajectories".format(len(xyz)))
-
-temp = xyz[0]
-_, num_atoms, num_axis = temp.xyz.shape
-reference_frame = temp.slice(0, copy=True)
-num_features = num_atoms*num_axis;
-pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
-X = np.concatenate(pre_X) # Each row contains the raw data of the corresponding frame
-
+X = np.load('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ.dat')
 
 # Find the dictionary
-foldername = '/scratch/users/mincheol/' + which_dataset + '/trajectories/'
+foldername = '/scratch/users/mincheol/' + which_dataset + '/dictionary/'
 dict_filename = 'dict_' + which_dataset + '_' + str(cluster_degree) + '_' + str(frame_degree) + '_iso_' + iso_ID +'.json'
 
 # Open Dictionary
@@ -86,7 +63,7 @@ with open(foldername + dict_filename, 'r') as fp:
 # Read through the dictionary and fix all the tuples
 edges  = {}
 for key,value in raw_dict.items(): # not iteritems() since it's python 3.x
-    edges[int(key)] = [(int(tup[0]), float(tup[1])) for tup in value]
+    edges[int(key)] = [(int(tup[0]), tup[1]) for tup in value]
 
 # Delete all trajectories in the folder
 import sys

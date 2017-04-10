@@ -19,11 +19,11 @@
 # REMOVE "normal" and set to "long" if you want your job to run longer than 48 hours,  
 # NOTE- in the hns partition the default max run time is 7 days , so you wont need to include qos
  
-#SBATCH --qos=bigmem
+#SBATCH --qos=normal
 
 # We are submitting to the dev partition, there are several on sherlock: normal, gpu, owners, hns, bigmem (jobs requiring >64Gigs RAM) 
 # 
-#SBATCH -p bigmem
+#SBATCH -p normal
 #################
 #number of nodes you are requesting, the more you ask for the longer you wait
 #SBATCH --nodes=1
@@ -32,7 +32,7 @@
 # sherlock automatically allocates 8 Gigs of RAM/CPU, if you ask for 8 CPUs you will need 32 Gigs of RAM, so either 
 # leave --mem commented out or request >= to the RAM needed for your CPU request.
  
-#SBATCH --mem=128GB
+#SBATCH --mem=60GB
 #################
 
 # Have SLURM send you an email when the job ends or fails, careful, the email could end up in your clutter folder
@@ -54,10 +54,9 @@ module load anaconda
 source activate test_env
 
 # Make sure all the dictionaries are created beforehand!
-python knn_sim_dict.py -dataset fspeptide -cluster_degree 10 -frame_degree 0
 
 # generate 300 trajectories with 100 frames each
-python knn_sim_gen.py -dataset fspeptide -num_traj 300 -traj_length 100 -cluster_degree 10 -frame_degree 20
+python boot_sim_gen.py -dataset fspeptide -num_traj 300 -traj_length 100 -cluster_degree 5 -frame_degree 0
 python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
 # delete all the trajectories
