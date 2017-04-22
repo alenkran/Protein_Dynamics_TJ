@@ -56,10 +56,39 @@ source activate test_env
 # Make sure all the dictionaries are created beforehand!
 
 # generate 300 trajectories with 100 frames each
-python boot_sim_gen.py -dataset fspeptide -num_traj 300 -traj_length 100 -cluster_degree 5 -frame_degree 0
+python boot_sim_gen.py -dataset fspeptide -num_traj 30 -traj_length 1000 -cluster_degree 20 -frame_degree 20
 python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 
+python boot_sim_gen.py -dataset fspeptide -num_traj 100 -traj_length 100 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+
+python boot_sim_gen.py -dataset fspeptide -num_traj 100 -traj_length 1000 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+
+python boot_sim_gen.py -dataset fspeptide -num_traj 300 -traj_length 100 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+
+python boot_sim_gen.py -dataset fspeptide -num_traj 300 -traj_length 1000 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+
+python boot_sim_gen.py -dataset fspeptide -num_traj 1000 -traj_length 10 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+
+python boot_sim_gen.py -dataset fspeptide -num_traj 1000 -traj_length 100 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+
+python boot_sim_gen.py -dataset fspeptide -num_traj 1000 -traj_length 1000 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+
+python boot_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 10 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+
+python boot_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 100 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
+
+python boot_sim_gen.py -dataset fspeptide -num_traj 10000 -traj_length 1000 -cluster_degree 20 -frame_degree 20
+python msmbuilder_bootstrap.py -dataset fspeptide -num_clusters 97
 # delete all the trajectories
-python knn_sim_gen.py -dataset fspeptide -num_traj 0
+python boot_sim_gen.py -dataset fspeptide -num_traj 0
 
 source deactivate

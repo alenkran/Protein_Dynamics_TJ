@@ -122,16 +122,22 @@ def random_frame_smart(neighbors, choices):
 
 def generate_md_traj_smart(graph_dict, X, folder_name, num_traj, length):
     choices = set()
+    visited = np.zeros((X.shape[0],2)) # keeps track of visited frames (frame, # of times visited)
+    visited[:,0] = range(X.shape[0])
     for k in range(0,num_traj):
         if len(choices) == 0:
-            choices = set(range(len(X)))
+            idx = np.where(visited[:,1] == min(visited[:,1]))[0]
+            choices = set(visited[idx,0])
         start = random.sample(choices, 1)[0]
         choices.remove(start)
         traj = [start]
-        
+        visited[start,1] += 1
+
         for i in range(0, length-1):
             neighbor = graph_dict[traj[i]]
-            traj.append(random_frame_smart(neighbor, choices))
+            next_frame = random_frame_smart(neighbor, choices)
+            traj.append(next_frame)
+            visited[next_frame,1] += 1
 
         our_traj = np.reshape(X[traj,:], (len(traj), len(X[0])/3, 3))
         md_traj = md.Trajectory(our_traj, md.load(fs_peptide.data_dir + '/fs-peptide.pdb').topology)
@@ -140,4 +146,5 @@ def generate_md_traj_smart(graph_dict, X, folder_name, num_traj, length):
 
 traj_folder = '/scratch/users/mincheol/' + which_dataset + '/trajectories/temp/'
 #generate_md_traj_old(edges, X, traj_folder, num_traj, traj_length, random=sample_rand)
+fs_peptide = FsPeptide()
 generate_md_traj_smart(edges, X, traj_folder, num_traj, traj_length)
