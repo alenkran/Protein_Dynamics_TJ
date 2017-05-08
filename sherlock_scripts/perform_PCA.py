@@ -11,7 +11,7 @@
 # sample_rate is the subsampling rate
 # pc is the number of principal components you want. 
 
-# Example: python perform_PCA.py -method isomap -n_neighbors 40 -n_components 10 -dataset fspeptide -sample_rate 0.1 -pc 2
+# Example: python perform_PCA.py -method isomap -n_neighbors 30 -n_components 40 -dataset fspeptide -stride 100 -pc 4
 
 # Output: A numpy dat file containing the PC components. 
 # These files are saved with a X_<method>_<n_neighbors>_<n_components>_<sample_rate>_pc.dat naming scheme.
@@ -29,7 +29,7 @@ parser.add_argument('-method', action="store", dest='method')
 parser.add_argument('-n_components', action="store", dest='n_components', type=int)
 parser.add_argument('-n_neighbors', action="store", dest='n_neighbors', type=int)
 parser.add_argument('-dataset', action='store', dest='which_dataset')
-parser.add_argument('-sample_rate', action='store', dest='sample_rate', type=float)
+parser.add_argument('-stride', action='store', dest='stride', type=int)
 parser.add_argument('-pc', action="store", dest='pc', type=int)
 args = parser.parse_args()
 
@@ -38,11 +38,11 @@ method = args.method
 n_neighbors = args.n_neighbors
 n_components = args.n_components
 which_dataset = args.which_dataset
-sample_rate = args.sample_rate
+stride = args.stride
 pc = args.pc
 
 # Combine n_neighbors and n_components to produce an ID
-ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(sample_rate)
+ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(stride)
 
 # Perform PCA in the Isomap dimension
 X_rd = np.load('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.dat')

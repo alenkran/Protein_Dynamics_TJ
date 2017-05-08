@@ -34,7 +34,7 @@ parser.add_argument('-method', action="store", dest='method')
 parser.add_argument('-n_components', action="store", dest='n_components', type=int)
 parser.add_argument('-n_neighbors', action="store", dest='n_neighbors', type=int)
 parser.add_argument('-dataset', action='store', dest='which_dataset')
-parser.add_argument('-sample_rate', action='store', dest='sample_rate', type=float)
+parser.add_argument('-stride', action='store', dest='stride', type=int)
 args = parser.parse_args()
 
 # Assign argument variables
@@ -42,14 +42,15 @@ method = args.method
 n_neighbors = args.n_neighbors
 n_components = args.n_components
 which_dataset = args.which_dataset
-sample_rate = args.sample_rate
+stride = args.stride
 
 # Combine n_neighbors and n_components to produce an ID
-ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(sample_rate)
+ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(stride)
 
 # Load appropriate X matrix
-X = np.load('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ.dat')
+X = np.load('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ_' + str(stride) + '_.dat')
 print('Raw data loaded')
+
 # Load the appropriate model 
 model = joblib.load('/scratch/users/mincheol/' + which_dataset + '/models/' + method + '_model_' + ID + '.pkl')
 print('Model loaded')

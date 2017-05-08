@@ -12,7 +12,7 @@
 # pc is the number of principal components you want. This would be 0 for raw reduced dimension.
 # n_clusters is the number of clusters
 
-# Example: python cluster_rd.py -method isomap -n_neighbors 40 -n_components 10 -dataset fspeptide -sample_rate 1.0 -pc 4 -n_clusters 97
+# Example: python cluster_rd.py -method isomap -n_neighbors 30 -n_components 40 -dataset fspeptide -sample_rate 1.0 -pc 4 -n_clusters 97
 
 # Output: A numpy dat file containing the clustering
 # These files are saved with a X_pc_<method>_<n_neighbors>_<n_components>_<sample_rate>_.dat naming scheme.
