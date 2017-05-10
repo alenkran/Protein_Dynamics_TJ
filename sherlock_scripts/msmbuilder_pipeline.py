@@ -7,7 +7,7 @@
 # Usage: python msmbuilder_pipeline.py -num_clusters <num_clusters>
 # num_clusters is the number of clusters used for clustering
 
-# Example: python msmbuilder_pipeline.py -num_clusters 400 -dataset calmodulin
+# Example: python msmbuilder_pipeline.py -num_clusters 400 -dataset apo_calmodulin
 
 # Outputs: 3 files
 # 1) MFPT matrix (num_state x num_state) - mean first passage time matrix from/to each state
@@ -51,9 +51,8 @@ if which_dataset == 'fspeptide':
 	to_ns = 0.5
 	print("with length {} ns".format(set(len(x)*to_ns for x in xyz)))
 
-if which_dataset == 'calmodulin':
-	xyz = dataset('/scratch/users/mincheol/Trajectories' + '/*.lh5', stride=10)
-	print("{} trajectories".format(len(xyz)))
+if which_dataset == 'apo_calmodulin':
+	xyz = dataset('/scratch/users/mincheol/apo_trajectories' + '/*.lh5', stride=10)
 
 #featurization
 from msmbuilder.featurizer import DihedralFeaturizer

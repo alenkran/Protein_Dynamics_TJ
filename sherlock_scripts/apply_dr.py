@@ -48,12 +48,16 @@ stride = args.stride
 ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(stride)
 
 # Load appropriate X matrix
-X = np.load('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ_' + str(stride) + '_.dat')
+X = np.load('/scratch/users/mincheol/' + which_dataset + '/datasets/raw_XYZ_' + str(stride) + '.dat')
 print('Raw data loaded')
 
 # Load the appropriate model 
-model = joblib.load('/scratch/users/mincheol/' + which_dataset + '/models/' + method + '_model_' + ID + '.pkl')
+if which_dataset == 'holo_calmodulin':
+	model = joblib.load('/scratch/users/mincheol/apo_calmodulin/models/' + method + '_model_' + ID + '.pkl')
+else:
+	model = joblib.load('/scratch/users/mincheol/' + which_dataset + '/models/' + method + '_model_' + ID + '.pkl')
 print('Model loaded')
+
 # Transform X matrix in batches
 X_rd = np.empty((X.shape[0], n_components))
 num_batches = 1000

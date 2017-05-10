@@ -15,6 +15,6 @@
 # otherwise: 
 module load anaconda
 source activate test_env
-python fit_model.py -method kernelPCA -n_neighbors 40 -n_components 10 -dataset apo_calmodulin -stride 250
-python apply_dr.py -method kernelPCA -n_neighbors 40 -n_components 10 -dataset apo_calmodulin -stride 250
+python fit_model.py -method kernelPCA -n_neighbors 40 -n_components 10 -dataset apo_calmodulin -stride 300
+python apply_dr.py -method kernelPCA -n_neighbors 40 -n_components 10 -dataset apo_calmodulin -stride 300
 source deactivate

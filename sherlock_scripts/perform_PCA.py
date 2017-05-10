@@ -44,8 +44,20 @@ pc = args.pc
 # Combine n_neighbors and n_components to produce an ID
 ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(stride)
 
-# Perform PCA in the Isomap dimension
-X_rd = np.load('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.dat')
+# Load things
+X_rd = np.load('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.dat', encoding='latin1')
+
+# Remove NaNs
+indices = []
+for i in range(X_rd.shape[0]):
+    if np.isnan(np.sum(X_rd[i,:])) or np.isinf(np.sum(X_rd[i,:])):
+        indices.append(i)
+
+X_rd = np.delete(X_rd, indices, 0)
+
+print(np.sum(np.sum(X_rd)))
+
+# Perform PCA
 pca = PCA(n_components=pc)
 X_rp = pca.fit_transform(X_rd)
 

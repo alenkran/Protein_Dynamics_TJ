@@ -49,7 +49,7 @@ stride = args.stride
 ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(stride)
 
 # Load appropriate X matrix
-X = np.load('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ_' + str(stride) + '_.dat')
+X = np.load('/scratch/users/mincheol/' + which_dataset + '/datasets/raw_XYZ_' + str(stride) + '.dat')
 
 # Get dimensions of the X matrix
 num_frames = X.shape[0]

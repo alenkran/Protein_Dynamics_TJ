@@ -60,5 +60,13 @@ num_features = num_atoms*num_axis;
 pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
 X = np.concatenate(pre_X)
 print(which_dataset)
+print('Original shape of X')
 print(X.shape)
-X.dump('/scratch/users/mincheol/' + which_dataset + '/raw_XYZ_' + str(stride) + '_.dat')	
+
+more_strides = [i*10 for i in range(2, 61)]
+for more_stride in more_strides:
+	idx = [i for i in range(X.shape[0])]
+	sampled_idx = idx[::int(more_stride/10)]
+	np.array(sampled_idx).dump('/scratch/users/mincheol/' + which_dataset +'/datasets/indices_' + str(more_stride) + '.dat')
+	sampled_X = X[sampled_idx, :]
+	sampled_X.dump('/scratch/users/mincheol/' + which_dataset +'/datasets/raw_XYZ_' + str(more_stride) + '.dat')
