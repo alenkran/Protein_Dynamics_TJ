@@ -63,7 +63,7 @@ print(which_dataset)
 print('Original shape of X')
 print(X.shape)
 
-more_strides = [i*10 for i in range(2, 61)]
+more_strides = [i*10 for i in range(61, 101)]
 for more_stride in more_strides:
 	idx = [i for i in range(X.shape[0])]
 	sampled_idx = idx[::int(more_stride/10)]

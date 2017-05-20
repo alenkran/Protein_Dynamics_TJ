@@ -45,12 +45,12 @@ pc = args.pc
 ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(stride)
 
 # Load things
-X_rd = np.load('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.dat', encoding='latin1')
+X_rd = np.load('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.dat')
 
 # Remove NaNs
 indices = []
 for i in range(X_rd.shape[0]):
-    if np.isnan(np.sum(X_rd[i,:])) or np.isinf(np.sum(X_rd[i,:])):
+    if np.isnan(np.sum(X_rd[i,:])) or np.isinf(np.sum(X_rd[i,:])) or np.sum(X_rd[i,:]) > 100000 or np.sum(X_rd[i,:]) < 100000:
         indices.append(i)
 
 X_rd = np.delete(X_rd, indices, 0)

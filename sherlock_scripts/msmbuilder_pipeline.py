@@ -21,6 +21,7 @@ from msmbuilder.example_datasets import FsPeptide
 import numpy as np
 import scipy as scipy
 import argparse as ap
+import msmbuilder.utils as utils
 from msmbuilder.dataset import dataset
 
 # Process arguments
@@ -44,12 +45,7 @@ if which_dataset == 'fspeptide':
 	fs_peptide.cache()
 	xyz = dataset(fs_peptide.data_dir + "/*.xtc",
 	              topology=fs_peptide.data_dir + '/fs-peptide.pdb',
-	              stride=10)
-	print("{} trajectories".format(len(xyz)))
-	# msmbuilder does not keep track of units! You must keep track of your
-	# data's timestep
-	to_ns = 0.5
-	print("with length {} ns".format(set(len(x)*to_ns for x in xyz)))
+	              stride=1)
 
 if which_dataset == 'apo_calmodulin':
 	xyz = dataset('/scratch/users/mincheol/apo_trajectories' + '/*.lh5', stride=10)
@@ -78,7 +74,7 @@ clustered_trajs = tica_trajs.fit_transform_with(
 # msm builder
 from msmbuilder.msm import MarkovStateModel
 from msmbuilder.utils import dump
-msm = MarkovStateModel(lag_time=2, n_timescales=20, ergodic_cutoff='off')
+msm = MarkovStateModel(lag_time=20, n_timescales=20, ergodic_cutoff='on')
 msm.fit(clustered_trajs)
 
 # Get MFPT
@@ -93,30 +89,25 @@ Pi_R = scipy.linalg.fractional_matrix_power(Pi, -0.5)
 T = msm.transmat_
 flux = np.linalg.multi_dot([Pi_L,T,Pi_R])
 
-# combine all trajectories into a trajectory "bag"
-frames_bag = []
-for idx, trajectories in enumerate(xyz):
-    if idx == 0:
-        frames_bag = trajectories
-    if idx != 0:
-        frames_bag = frames_bag.join(trajectories)
-num_frames, num_atoms, num_axis = frames_bag.xyz.shape
-
 # Concatenate the trajectories in cluster indices
 cluster_indices = np.concatenate(clustered_trajs)
 
-# compute XYZ coordinates of cluster centers
-cluster_centers = np.empty((num_clusters, num_atoms*num_axis), dtype=float)
-X = np.reshape(frames_bag.xyz, (num_frames, num_atoms*num_axis))
-for idx in range(num_clusters):
-    indices = (cluster_indices == idx)
-    cluster_centers[idx, :] = X[indices,:].mean(axis=0)
+# Combine all trajectories into a trajectory "bag"
+temp = xyz[0]
+_, num_atoms, num_axis = temp.xyz.shape
+reference_frame = temp.slice(0, copy=True)
+num_features = num_atoms*num_axis;
+pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
+X = np.concatenate(pre_X)
+
+# Save the msm itself
+utils.dump(msm, '/scratch/users/mincheol/' + which_dataset + '/msm_out/msm.pkl')
+
+# Save the raw file 
+X.savetxt('/scratch/users/mincheol/' + which_dataset + '/datasets/all_frames.csv')
 
 # save MFPT matrix
 mfpt_matrix.dump('/scratch/users/mincheol/' + which_dataset + '/msm_out/msm_mfpt_mat.dat')
-
-# save clusters
-cluster_centers.dump('/scratch/users/mincheol/' + which_dataset + '/msm_out/msm_clusters_XYZ.dat')	
 
 # save assignments
 cluster_indices.dump('/scratch/users/mincheol/' + which_dataset + '/msm_out/msm_clustering_labels.dat')

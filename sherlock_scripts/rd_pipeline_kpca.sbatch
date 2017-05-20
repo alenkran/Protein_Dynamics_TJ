@@ -3,7 +3,7 @@
 #SBATCH --job-name=rd_pipeline_kpca
 #SBATCH --output=/scratch/users/mincheol/job_outputs/rd_pipeline_kpca.%j.out
 #SBATCH --error=/scratch/users/mincheol/job_outputs/rd_pipeline_kpca.%j.err
-#SBATCH --time=2:00:00
+#SBATCH --time=3:00:00
 #SBATCH --qos=normal
 #SBATCH -p normal
 #SBATCH --nodes=2
