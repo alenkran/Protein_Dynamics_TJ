@@ -1,18 +1,16 @@
 ################################################################################
 # Authors: Min Cheol Kim, Christian Choe
 
-# Description: Runs MSMBuilder in a given dataset. Outputs various results we
-# want from the MSM Builder module
+# Description: Generates trajectories from MSM builder.
 
-# Usage: python msmbuilder_pipeline.py -num_clusters <num_clusters>
+# Usage: python sample_msm.py -num_clusters <num_clusters>
 # num_clusters is the number of clusters used for clustering
 
-# Example: python msmbuilder_pipeline.py -num_clusters 400 -dataset apo_calmodulin
+# Example: python sample_msm.py -num_clusters 400 -dataset apo_calmodulin
 
 # Outputs: 3 files
-# 1) MFPT matrix (num_state x num_state) - mean first passage time matrix from/to each state
-# 2) msm_cluster_XYZ - Centroid of each state cluster in XYZ coordinates
-# 3) cluster_indices - state assignment matrix for each frame
+# 1) raw_XYZ - trajectory in raw format (each row is a frame)
+# 3) cluster_indices - state assignment matrix for each frame in raw_XYZ
 
 ################################################################################
 
@@ -22,6 +20,7 @@ import numpy as np
 import scipy as scipy
 import argparse as ap
 from msmbuilder.dataset import dataset
+import mdtraj as md
 
 # Process arguments
 parser = ap.ArgumentParser(description='MSMBuilder pipeline script.')
@@ -45,19 +44,22 @@ if which_dataset == 'fspeptide':
 	xyz = dataset(fs_peptide.data_dir + "/*.xtc",
 	              topology=fs_peptide.data_dir + '/fs-peptide.pdb',
 	              stride=10)
-	print("{} trajectories".format(len(xyz)))
+	print("{} trjaectories".format(len(xyz)))
 	# msmbuilder does not keep track of units! You must keep track of your
 	# data's timestep
 	to_ns = 0.5
 	print("with length {} ns".format(set(len(x)*to_ns for x in xyz)))
 
 if which_dataset == 'apo_calmodulin':
+	print('correct')
 	xyz = dataset('/scratch/users/mincheol/apo_trajectories' + '/*.lh5', stride=10)
 
 #featurization
 from msmbuilder.featurizer import DihedralFeaturizer
 featurizer = DihedralFeaturizer(types=['phi', 'psi'])
-diheds = xyz.fit_transform_with(featurizer, 'diheds/', fmt='dir-npy')
+print(xyz)
+print(which_dataset)
+diheds = xyz.fit_transform_with(featurizer, 'diheds/', fmt='dir-npy')  #?????????????????????????????
 
 #tICA
 from msmbuilder.decomposition import tICA
@@ -78,7 +80,7 @@ clustered_trajs = tica_trajs.fit_transform_with(
 # msm builder
 from msmbuilder.msm import MarkovStateModel
 from msmbuilder.utils import dump
-msm = MarkovStateModel(lag_time=2, n_timescales=20, ergodic_cutoff='off')
+msm = MarkovStateModel(lag_time=2, n_timescales=20, ergodic_cutoff='on')
 msm.fit(clustered_trajs)
 
 # Get MFPT
@@ -112,27 +114,49 @@ for idx in range(num_clusters):
     indices = (cluster_indices == idx)
     cluster_centers[idx, :] = X[indices,:].mean(axis=0)
 
-# Generate trajectory
+# Get MFPT
+from msmbuilder.tpt import mfpts 
+mfpt_matrix = mfpts(msm)
 
-for stride_eff = np.arange(250, 460, 10)
+# Get flux matrix
+Pi = np.diag(msm.populations_)
+Pi = scipy.linalg.fractional_matrix_power(Pi, 1)
+Pi_L = scipy.linalg.fractional_matrix_power(Pi, 0.5)
+Pi_R = scipy.linalg.fractional_matrix_power(Pi, -0.5)
+T = msm.transmat_
+flux = np.linalg.multi_dot([Pi_L,T,Pi_R])
 
-# get length of the trajectory
-filename = '/scratch/users/mincheol/apo_calmodulin/datasets/indices_' + str(stride_eff) + '.dat'
-indices = np.load(filename)
-traj_length = indices.shape[0]
+# save MFPT matrix
+mfpt_matrix.dump('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/msm_mfpt_mat.dat')
 
-# generate and populate
-traj_raw = msm.sample(msm.transmat_, traj_length) #Raw trajectory with only state labels
-traj = []
-for state in traj_raw:
-    options = np.where(cluster_indices == state)[0]
-    next_frame = np.random.choice(options)
-    traj.append(next_frame)
-    
-our_traj = np.reshape(X[traj,:], (len(traj), len(X[0])/3, 3))
-md_traj = md.Trajectory(our_traj, md.load(fs_peptide.data_dir + '/fs-peptide.pdb').topology)
-location = 'C:\Users\Christian\Documents\GitHub\Protein_Dynamics_TJ\MSM_Builder_Test\\'
+# save clusters
+cluster_centers.dump('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/msm_clusters_XYZ.dat')	
 
-md_traj.save_xtc(location + 'long.xtc') # Saves an xtc trajectory file
-np.save('long.dat', X[traj,:]) # Saves a .dat file
-np.save('indices_'+ ID +'.dat')
+# save assignments
+cluster_indices.dump('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/msm_clustering_labels.dat')
+
+# save flux matrix
+flux.dump('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/msm_flux_mat.dat')
+
+# save population vector
+msm.populations_.dump('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/msm_pop_vec.dat')
+
+# Generate trajectoies
+for stride_eff in np.arange(250, 1010, 10):
+	# get length of the trajectory
+	filename = '/scratch/users/mincheol/apo_calmodulin/datasets/indices_' + str(stride_eff) + '.dat'
+	indices = np.load(filename)
+	traj_length = indices.shape[0]
+
+	# generate and populate
+	traj_raw = msm.sample(msm.transmat_, traj_length) #Raw trajectory with only state labels
+	traj = []
+	for state in traj_raw:
+	    options = np.where(cluster_indices == state)[0]
+	    next_frame = np.random.choice(options)
+	    traj.append(next_frame)
+	traj = np.array(traj)
+	    
+	folder = '/scratch/users/mincheol/'+which_dataset+'/sim_datasets/'
+	X[traj,:].dump(folder+'raw_XYZ_'+str(stride_eff)+'.dat') # Saves a .dat file
+	traj.dump(folder+'indices_'+ str(stride_eff) +'.dat')
