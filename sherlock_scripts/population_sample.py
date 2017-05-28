@@ -37,13 +37,14 @@ import os
 os.chdir(tempfile.mkdtemp())
 
 xyz = [] # placeholder
+print(which_dataset)
 if which_dataset == 'fspeptide':
 	# Get data
 	fs_peptide = FsPeptide()
 	fs_peptide.cache()
 	xyz = dataset(fs_peptide.data_dir + "/*.xtc",
 	              topology=fs_peptide.data_dir + '/fs-peptide.pdb',
-	              stride=10)
+	              stride=1)
 	print("{} trjaectories".format(len(xyz)))
 	# msmbuilder does not keep track of units! You must keep track of your
 	# data's timestep
@@ -59,13 +60,13 @@ from msmbuilder.featurizer import DihedralFeaturizer
 featurizer = DihedralFeaturizer(types=['phi', 'psi'])
 print(xyz)
 print(which_dataset)
-diheds = xyz.fit_transform_with(featurizer, 'diheds/', fmt='dir-npy')  #?????????????????????????????
+diheds = xyz.fit_transform_with(featurizer, 'diheds/', fmt='dir-npy')
 
 #tICA
 from msmbuilder.decomposition import tICA
 
 if which_dataset == 'fspeptide':
-	tica_model = tICA(lag_time=2, n_components=4)
+	tica_model = tICA(lag_time=20, n_components=4)
 if which_dataset == 'apo_calmodulin':
 	tica_model = tICA(lag_time=250, n_components=20)
 
@@ -87,7 +88,7 @@ from msmbuilder.msm import MarkovStateModel
 from msmbuilder.utils import dump
 
 if which_dataset == 'fspeptide':
-	msm = MarkovStateModel(lag_time=2, n_timescales=20, ergodic_cutoff='on')
+	msm = MarkovStateModel(lag_time=20, n_timescales=20, ergodic_cutoff='on')
 if which_dataset == 'apo_calmodulin':
 	msm = MarkovStateModel(lag_time=125, n_timescales=20, ergodic_cutoff='on')
 
@@ -141,7 +142,8 @@ for state in msm.mapping_.keys():
 
 limiting_state = state_list[np.argmin(limit_list)] #original frame label
 max_frame = int(limit_list[msm.mapping_[limiting_state]])
-
+print('Max frames: ')
+print(max_frame)
 
 for num_frame in np.arange(5000, max_frame, 1000):
 
@@ -151,7 +153,7 @@ for num_frame in np.arange(5000, max_frame, 1000):
 	# Go through each state and take the appropriate number of frames
 	frame_idx = np.empty((0,))
 	for state in msm.mapping_.keys():
-	    options = np.where(cluster_label == state)[0]
+	    options = np.where(cluster_indices == state)[0]
 	    frame_idx = np.hstack((frame_idx,np.random.choice(options, num_state_frames[msm.mapping_[state]], replace=False)))
 	frame_idx = frame_idx.astype(int)
 
