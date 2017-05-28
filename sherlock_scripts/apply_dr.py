@@ -48,7 +48,7 @@ stride = args.stride
 ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(stride)
 
 # Load appropriate X matrix
-X = np.load('/scratch/users/mincheol/' + which_dataset + '/datasets/raw_XYZ_' + str(stride) + '.dat')
+X = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_XYZ_' + str(stride) + '.csv', delimiter=',')
 print('Raw data loaded')
 
 # Load the appropriate model 

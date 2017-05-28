@@ -85,7 +85,7 @@ mfpt_matrix = mfpts(msm)
 Pi = np.diag(msm.populations_)
 Pi = scipy.linalg.fractional_matrix_power(Pi, 1)
 Pi_L = scipy.linalg.fractional_matrix_power(Pi, 0.5)
-Pi_R = scipy.linalg.fractional_matrix_power(Pi, -0.5)
+Pi_R = scipy.linalg.fractional_matrix_power(Pi, -0.5)!!
 T = msm.transmat_
 flux = np.linalg.multi_dot([Pi_L,T,Pi_R])
 
