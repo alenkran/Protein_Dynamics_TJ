@@ -9,10 +9,8 @@
 # n_components is components in the ISOMAP space
 # dataset is which dataset to use
 
-# Example: python apply_dr.py -method isomap -n_neighbors 100 -n_components 100 -dataset apo_calmodulin -sample_rate 0.1
-
-# Output: 1 .dat file containing the transformed coordinates.
-# These files are saved with a *_<n_neighbors>_<n_components>_<sample_rate>.dat naming scheme.
+# Output: 1 .csv file containing the transformed coordinates.
+# These files are saved with a *_<n_neighbors>_<n_components>_<frames>.dat naming scheme.
 
 ################################################################################
 
@@ -34,7 +32,7 @@ parser.add_argument('-method', action="store", dest='method')
 parser.add_argument('-n_components', action="store", dest='n_components', type=int)
 parser.add_argument('-n_neighbors', action="store", dest='n_neighbors', type=int)
 parser.add_argument('-dataset', action='store', dest='which_dataset')
-parser.add_argument('-stride', action='store', dest='stride', type=int)
+parser.add_argument('-frames', action='store', dest='frames', type=int)
 args = parser.parse_args()
 
 # Assign argument variables
@@ -42,13 +40,13 @@ method = args.method
 n_neighbors = args.n_neighbors
 n_components = args.n_components
 which_dataset = args.which_dataset
-stride = args.stride
+frames = args.frames
 
 # Combine n_neighbors and n_components to produce an ID
-ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(stride)
+ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(frames)
 
 # Load appropriate X matrix
-X = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_XYZ_' + str(stride) + '.csv', delimiter=',')
+X = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_XYZ_' + str(frames) + '.csv', delimiter=',')
 print('Raw data loaded')
 
 # Load the appropriate model 
@@ -69,6 +67,6 @@ for batch in range(num_batches+1):
 		X_rd[start_idx:end_idx, :] = model.transform(X[start_idx:end_idx,:])
 
 # Saved X in reduced dimension
-X_rd.dump('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.dat')
+np.savetxt('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.csv', X_rd, delimiter=',')
 print('Coordinates saved in reduced dimension')
 

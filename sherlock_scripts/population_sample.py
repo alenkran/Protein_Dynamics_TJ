@@ -68,7 +68,7 @@ from msmbuilder.decomposition import tICA
 if which_dataset == 'fspeptide':
 	tica_model = tICA(lag_time=20, n_components=4)
 if which_dataset == 'apo_calmodulin':
-	tica_model = tICA(lag_time=250, n_components=20)
+	tica_model = tICA(lag_time=400, n_components=20)
 
 # fit and transform can be done in seperate steps:
 tica_model = diheds.fit_with(tica_model)
@@ -90,7 +90,7 @@ from msmbuilder.utils import dump
 if which_dataset == 'fspeptide':
 	msm = MarkovStateModel(lag_time=20, n_timescales=20, ergodic_cutoff='on')
 if which_dataset == 'apo_calmodulin':
-	msm = MarkovStateModel(lag_time=125, n_timescales=20, ergodic_cutoff='on')
+	msm = MarkovStateModel(lag_time=200, n_timescales=20, ergodic_cutoff='on')
 
 msm.fit(clustered_trajs)
 
@@ -102,16 +102,13 @@ for idx, trajectories in enumerate(xyz):
     if idx != 0:
         frames_bag = frames_bag.join(trajectories)
 num_frames, num_atoms, num_axis = frames_bag.xyz.shape
+print('Frame bag constructed')
 
 # Concatenate the trajectories in cluster indices
 cluster_indices = np.concatenate(clustered_trajs)
 
-# compute XYZ coordinates of cluster centers
-cluster_centers = np.empty((num_clusters, num_atoms*num_axis), dtype=float)
+# Compile X
 X = np.reshape(frames_bag.xyz, (num_frames, num_atoms*num_axis))
-for idx in range(num_clusters):
-    indices = (cluster_indices == idx)
-    cluster_centers[idx, :] = X[indices,:].mean(axis=0)
 
 folder = '/scratch/users/mincheol/' + which_dataset + '/sim_datasets/'
 
@@ -119,14 +116,8 @@ folder = '/scratch/users/mincheol/' + which_dataset + '/sim_datasets/'
 import msmbuilder.utils as msmutils
 msmutils.dump(msm, '/scratch/users/mincheol/' + which_dataset + '/sim_datasets/msm.pkl')
 
-# save clusters
-np.savetxt(folder + 'msm_clusters_XYZ.csv', cluster_centers, delimiter=',')
-
 # save assignments
 np.savetxt(folder + 'msm_clustering_labels.csv', cluster_indices, delimiter=',')
-
-# save population vector
-np.savetxt(folder + 'msm_pop_vec.csv', msm.populations_, delimiter=',')
 
 # Generate sampled data
 # Find frame limit
@@ -145,7 +136,7 @@ max_frame = int(limit_list[msm.mapping_[limiting_state]])
 print('Max frames: ')
 print(max_frame)
 
-for num_frame in np.arange(5000, max_frame, 1000):
+for num_frame in np.arange(100000, max_frame, 50000):
 
 	# Number of frames to sample from each state
 	num_state_frames = np.array(num_frame*msm.populations_).astype(int)
