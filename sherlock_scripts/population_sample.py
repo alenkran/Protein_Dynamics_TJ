@@ -44,7 +44,7 @@ if which_dataset == 'fspeptide':
 	fs_peptide.cache()
 	xyz = dataset(fs_peptide.data_dir + "/*.xtc",
 	              topology=fs_peptide.data_dir + '/fs-peptide.pdb',
-	              stride=1)
+	              stride=10)
 	print("{} trjaectories".format(len(xyz)))
 	# msmbuilder does not keep track of units! You must keep track of your
 	# data's timestep
@@ -66,7 +66,7 @@ diheds = xyz.fit_transform_with(featurizer, 'diheds/', fmt='dir-npy')
 from msmbuilder.decomposition import tICA
 
 if which_dataset == 'fspeptide':
-	tica_model = tICA(lag_time=20, n_components=4)
+	tica_model = tICA(lag_time=2, n_components=4)
 if which_dataset == 'apo_calmodulin':
 	tica_model = tICA(lag_time=400, n_components=20)
 
@@ -88,7 +88,7 @@ from msmbuilder.msm import MarkovStateModel
 from msmbuilder.utils import dump
 
 if which_dataset == 'fspeptide':
-	msm = MarkovStateModel(lag_time=20, n_timescales=20, ergodic_cutoff='on')
+	msm = MarkovStateModel(lag_time=2, n_timescales=20, ergodic_cutoff='off')
 if which_dataset == 'apo_calmodulin':
 	msm = MarkovStateModel(lag_time=200, n_timescales=20, ergodic_cutoff='on')
 
@@ -136,7 +136,7 @@ max_frame = int(limit_list[msm.mapping_[limiting_state]])
 print('Max frames: ')
 print(max_frame)
 
-for num_frame in np.arange(100000, max_frame, 50000):
+for num_frame in np.arange(5000, max_frame, 1000):
 
 	# Number of frames to sample from each state
 	num_state_frames = np.array(num_frame*msm.populations_).astype(int)
