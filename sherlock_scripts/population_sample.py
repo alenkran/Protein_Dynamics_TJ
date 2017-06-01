@@ -88,27 +88,22 @@ from msmbuilder.msm import MarkovStateModel
 from msmbuilder.utils import dump
 
 if which_dataset == 'fspeptide':
-	msm = MarkovStateModel(lag_time=2, n_timescales=20, ergodic_cutoff='off')
+	msm = MarkovStateModel(lag_time=2, n_timescales=20, ergodic_cutoff='on')
 if which_dataset == 'apo_calmodulin':
 	msm = MarkovStateModel(lag_time=200, n_timescales=20, ergodic_cutoff='on')
 
 msm.fit(clustered_trajs)
 
-# combine all trajectories into a trajectory "bag"
-frames_bag = []
-for idx, trajectories in enumerate(xyz):
-    if idx == 0:
-        frames_bag = trajectories
-    if idx != 0:
-        frames_bag = frames_bag.join(trajectories)
-num_frames, num_atoms, num_axis = frames_bag.xyz.shape
-print('Frame bag constructed')
-
 # Concatenate the trajectories in cluster indices
 cluster_indices = np.concatenate(clustered_trajs)
 
 # Compile X
-X = np.reshape(frames_bag.xyz, (num_frames, num_atoms*num_axis))
+temp = xyz[0]
+_, num_atoms, num_axis = temp.xyz.shape
+reference_frame = temp.slice(0, copy=True)
+num_features = num_atoms*num_axis;
+pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
+X = np.concatenate(pre_X)
 
 folder = '/scratch/users/mincheol/' + which_dataset + '/sim_datasets/'
 
@@ -148,7 +143,11 @@ for num_frame in np.arange(5000, max_frame, 1000):
 	    frame_idx = np.hstack((frame_idx,np.random.choice(options, num_state_frames[msm.mapping_[state]], replace=False)))
 	frame_idx = frame_idx.astype(int)
 
+	# Cluster label for each index
+	label_hat = np.repeat(list(msm.mapping_.keys()), num_state_frames)
+
 	# Save data
 	X_hat = X[frame_idx, :]
 	np.savetxt(folder + 'raw_XYZ_'+str(num_frame)+'.csv', X_hat, delimiter=',')
 	np.savetxt(folder + 'indices_'+str(num_frame)+'.csv', frame_idx, delimiter=',')
+	np.savetxt(folder + 'sample_cluster_assignment_'+str(num_frame)+'.csv', label_hat, delimiter=',')
