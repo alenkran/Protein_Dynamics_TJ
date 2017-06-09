@@ -33,6 +33,7 @@ parser.add_argument('-n_components', action="store", dest='n_components', type=i
 parser.add_argument('-n_neighbors', action="store", dest='n_neighbors', type=int)
 parser.add_argument('-dataset', action='store', dest='which_dataset')
 parser.add_argument('-frames', action='store', dest='frames', type=int)
+parser.add_argument('-feature', action='store', dest='feature')
 args = parser.parse_args()
 
 # Assign argument variables
@@ -41,12 +42,13 @@ n_neighbors = args.n_neighbors
 n_components = args.n_components
 which_dataset = args.which_dataset
 frames = args.frames
+feature = args.feature
 
 # Combine n_neighbors and n_components to produce an ID
 ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(frames)
 
 # Load appropriate X matrix
-X = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_XYZ_' + str(frames) + '.csv', delimiter=',')
+X = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_'+feature+'_' + str(frames) + '.csv', delimiter=',')
 print('Raw data loaded')
 
 # Load the appropriate model 

@@ -26,11 +26,13 @@ import mdtraj as md
 parser = ap.ArgumentParser(description='MSMBuilder pipeline script.')
 parser.add_argument('-num_clusters', action='store', dest='num_clusters', type=int)
 parser.add_argument('-dataset', action='store', dest='which_dataset')
+parser.add_argument('-feature', action='store', dest='feature')
 args = parser.parse_args()
 
 # Assignment arguments
 num_clusters = args.num_clusters
 which_dataset = args.which_dataset
+feature = args.feature
 
 import tempfile
 import os
@@ -53,13 +55,12 @@ if which_dataset == 'fspeptide':
 
 if which_dataset == 'apo_calmodulin':
 	print('correct')
-	xyz = dataset('/scratch/users/mincheol/apo_trajectories' + '/*.lh5', stride=1)
+	xyz = dataset('/scratch/users/mincheol/apo_trajectories' + '/*.lh5', stride=10)
 
 #featurization
 from msmbuilder.featurizer import DihedralFeaturizer
 featurizer = DihedralFeaturizer(types=['phi', 'psi'])
 print(xyz)
-print(which_dataset)
 diheds = xyz.fit_transform_with(featurizer, 'diheds/', fmt='dir-npy')
 
 #tICA
@@ -68,7 +69,7 @@ from msmbuilder.decomposition import tICA
 if which_dataset == 'fspeptide':
 	tica_model = tICA(lag_time=2, n_components=4)
 if which_dataset == 'apo_calmodulin':
-	tica_model = tICA(lag_time=400, n_components=20)
+	tica_model = tICA(lag_time=40, n_components=20)
 
 # fit and transform can be done in seperate steps:
 tica_model = diheds.fit_with(tica_model)
@@ -90,7 +91,7 @@ from msmbuilder.utils import dump
 if which_dataset == 'fspeptide':
 	msm = MarkovStateModel(lag_time=2, n_timescales=20, ergodic_cutoff='on')
 if which_dataset == 'apo_calmodulin':
-	msm = MarkovStateModel(lag_time=200, n_timescales=20, ergodic_cutoff='on')
+	msm = MarkovStateModel(lag_time=20, n_timescales=20, ergodic_cutoff='on')
 
 msm.fit(clustered_trajs)
 
@@ -98,12 +99,17 @@ msm.fit(clustered_trajs)
 cluster_indices = np.concatenate(clustered_trajs)
 
 # Compile X
-temp = xyz[0]
-_, num_atoms, num_axis = temp.xyz.shape
-reference_frame = temp.slice(0, copy=True)
-num_features = num_atoms*num_axis;
-pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
-X = np.concatenate(pre_X)
+if feature == 'XYZ':
+	temp = xyz[0]
+	_, num_atoms, num_axis = temp.xyz.shape
+	reference_frame = temp.slice(0, copy=True)
+	num_features = num_atoms*num_axis;
+	pre_X = [np.reshape(traj.xyz, (traj.superpose(reference_frame).xyz.shape[0],num_features)) for traj in xyz]
+	X = np.concatenate(pre_X)
+if feature == 'angle':
+	_, num_features = diheds[0].shape
+	pre_X = [np.reshape(traj, (traj.shape[0],num_features)) for traj in diheds]
+	X = np.concatenate(pre_X)
 
 folder = '/scratch/users/mincheol/' + which_dataset + '/sim_datasets/'
 
@@ -131,7 +137,13 @@ max_frame = int(limit_list[msm.mapping_[limiting_state]])
 print('Max frames: ')
 print(max_frame)
 
-for num_frame in np.arange(5000, max_frame, 1000):
+# determine how points to sample
+if which_dataset == 'fspeptide':
+	sampling_range = np.arange(3000, max_frame, 3000)
+if which_dataset == 'apo_calmodulin':
+	sampling_range = np.arange(5000, max_frame, 5000)
+
+for num_frame in sampling_range:
 
 	# Number of frames to sample from each state
 	num_state_frames = np.array(num_frame*msm.populations_).astype(int)
@@ -148,6 +160,10 @@ for num_frame in np.arange(5000, max_frame, 1000):
 
 	# Save data
 	X_hat = X[frame_idx, :]
-	np.savetxt(folder + 'raw_XYZ_'+str(num_frame)+'.csv', X_hat, delimiter=',')
+	np.savetxt(folder + 'raw_'+feature+'_'+str(num_frame)+'.csv', X_hat, delimiter=',')
 	np.savetxt(folder + 'indices_'+str(num_frame)+'.csv', frame_idx, delimiter=',')
 	np.savetxt(folder + 'sample_cluster_assignment_'+str(num_frame)+'.csv', label_hat, delimiter=',')
+
+# Also save the complete X matrix with cluster assignment
+np.savetxt(folder + 'raw_'+feature+'_'+str(X.shape[0])+'.csv', X, delimiter=',')
+np.savetxt(folder + 'sample_cluster_assignment_'+str(X.shape[0])+'.csv', cluster_indices, delimiter=',')
