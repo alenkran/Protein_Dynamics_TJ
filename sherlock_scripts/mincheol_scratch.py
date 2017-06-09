@@ -16,12 +16,17 @@ from sklearn.decomposition import PCA
 # 	print(stride)
 # 	print(indices.shape)
 
-n_neighbors_set = [30, 40]
-n_components_set = [10, 20, 30, 40]
-strides = [12000]
+n_neighbors_set = [40]
+n_components_set = [40]
+#strides = [5000, 15000, 25000] #apo_calmodulin
+strides = [3000, 9000, 15000] #fspeptide
 datasets = ['fspeptide']
+#datasets = ['apo_calmodulin']
 methods = ['isomap', 'kernelPCA']
 pc = 4
+
+data_type = ['angle'][0]
+raw = True
 
 for n_components in n_components_set:
 	for which_dataset in datasets:
@@ -32,7 +37,10 @@ for n_components in n_components_set:
 					ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(stride)
 
 					# Load things
-					X_rd = np.load('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.dat')
+					if raw:
+						X_rd = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_'+ data_type +'_' + str(stride) + '.csv', delimiter=',')
+					else:
+						X_rd = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.csv', delimiter=',')
 
 					# Remove NaNs
 					indices = []
@@ -47,4 +55,8 @@ for n_components in n_components_set:
 					X_rp = pca.fit_transform(X_rd)
 
 					# Save the PC coordinates
-					X_rp.dump('/scratch/users/mincheol/' + which_dataset + '/principal_components/X_pc_'+ method +'_' + ID + '_' + str(pc) + '.dat')
+					if raw:
+						X_rp.dump('/scratch/users/mincheol/' + which_dataset + '/principal_components/X_pc_raw_' + str(stride) + '_' + str(pc) + '.dat')
+						break
+					else:
+						X_rp.dump('/scratch/users/mincheol/' + which_dataset + '/principal_components/X_pc_'+ method +'_' + ID + '_' + str(pc) + '.dat')
