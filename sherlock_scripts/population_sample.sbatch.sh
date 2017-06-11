@@ -52,6 +52,6 @@
 # otherwise: 
 module load anaconda
 source activate test_env
-#python population_sample.py -num_clusters 100 -dataset fspeptide -feature angle
+python population_sample.py -num_clusters 100 -dataset fspeptide -feature angle
 python population_sample.py -num_clusters 100 -dataset apo_calmodulin -feature angle
 source deactivate

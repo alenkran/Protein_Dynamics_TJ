@@ -34,6 +34,9 @@ num_clusters = args.num_clusters
 which_dataset = args.which_dataset
 feature = args.feature
 
+# Folder to save everything
+folder = '/scratch/users/mincheol/' + which_dataset + '/sim_datasets/'
+
 import tempfile
 import os
 os.chdir(tempfile.mkdtemp())
@@ -77,6 +80,9 @@ tica_trajs = diheds.transform_with(tica_model, 'ticas/', fmt='dir-npy')
 
 txx = np.concatenate(tica_trajs)
 
+# save tICA
+np.savetxt(folder + 'tICA_coord_+' + which_dataset +'.csv', txx, delimiter=',')
+
 # clustering
 from msmbuilder.cluster import MiniBatchKMeans
 clusterer = MiniBatchKMeans(n_clusters=num_clusters) #100 for camodulin
@@ -111,11 +117,9 @@ if feature == 'angle':
 	pre_X = [np.reshape(traj, (traj.shape[0],num_features)) for traj in diheds]
 	X = np.concatenate(pre_X)
 
-folder = '/scratch/users/mincheol/' + which_dataset + '/sim_datasets/'
-
 # save MSM
 import msmbuilder.utils as msmutils
-msmutils.dump(msm, '/scratch/users/mincheol/' + which_dataset + '/sim_datasets/msm.pkl')
+msmutils.dump(msm, '/scratch/users/mincheol/' + which_dataset + '/sim_datasets/msm_' + which_dataset + '.pkl')
 
 # save assignments
 np.savetxt(folder + 'msm_clustering_labels.csv', cluster_indices, delimiter=',')
@@ -139,11 +143,21 @@ print(max_frame)
 
 # determine how points to sample
 if which_dataset == 'fspeptide':
-	sampling_range = np.arange(3000, max_frame, 3000)
+	sampling_range = np.arange(1000, max_frame, 500)
+	sampling_range = np.concatenate((np.arange(100, 1000, 100), sampling_range))
 if which_dataset == 'apo_calmodulin':
-	sampling_range = np.arange(5000, max_frame, 5000)
+	sampling_range = np.arange(20000, max_frame, 2000)
+	sampling_range = np.concatenate((np.arange(5000, 20000, 1000), sampling_range))
+	sampling_range = np.concatenate((np.arange(1000, 5000, 500), sampling_range))
+	sampling_range = np.concatenate((np.arange(200, 1000, 200), sampling_range))
 
 for num_frame in sampling_range:
+
+	# If the number of frames is too large continue
+	if num_frame > max_frame:
+		print('too large: ')
+		print(max_frame)
+		continue
 
 	# Number of frames to sample from each state
 	num_state_frames = np.array(num_frame*msm.populations_).astype(int)
@@ -164,6 +178,5 @@ for num_frame in sampling_range:
 	np.savetxt(folder + 'indices_'+str(num_frame)+'.csv', frame_idx, delimiter=',')
 	np.savetxt(folder + 'sample_cluster_assignment_'+str(num_frame)+'.csv', label_hat, delimiter=',')
 
-# Also save the complete X matrix with cluster assignment
+# Also save the complete X matrix
 np.savetxt(folder + 'raw_'+feature+'_'+str(X.shape[0])+'.csv', X, delimiter=',')
-np.savetxt(folder + 'sample_cluster_assignment_'+str(X.shape[0])+'.csv', cluster_indices, delimiter=',')
