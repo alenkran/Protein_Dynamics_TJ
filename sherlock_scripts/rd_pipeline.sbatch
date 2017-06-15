@@ -15,23 +15,9 @@
 # otherwise:
 module load anaconda
 source activate test_env
+python fit_model.py -method isomap -n_neighbors 40 -n_components 40 -dataset fspeptide -frames 0 -feature angle
+python apply_dr.py -method isomap -n_neighbors 40 -n_components 40 -dataset fspeptide -frames 0 -feature angle
 
-python fit_model.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset apo_calmodulin -frames 25000 -feature angle
-python apply_dr.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset apo_calmodulin -frames 25000 -feature angle
-
-python fit_model.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset apo_calmodulin -frames 15000 -feature angle
-python apply_dr.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset apo_calmodulin -frames 15000 -feature angle
-
-python fit_model.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset apo_calmodulin -frames 5000 -feature angle
-python apply_dr.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset apo_calmodulin -frames 5000 -feature angle
-
-python fit_model.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset fspeptide -frames 15000 -feature angle
-python apply_dr.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset fspeptide -frames 15000 -feature angle
-
-python fit_model.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset fspeptide -frames 9000 -feature angle
-python apply_dr.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset fspeptide -frames 9000 -feature angle
-
-python fit_model.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset fspeptide -frames 3000 -feature angle
-python apply_dr.py -method kernelPCA -n_neighbors 40 -n_components 40 -dataset fspeptide -frames 3000 -feature angle
-
+#python fit_model.py -method isomap -n_neighbors 40 -n_components 40 -dataset apo_calmodulin -frames 0 -feature angle
+#python apply_dr.py -method isomap -n_neighbors 40 -n_components 40 -dataset apo_calmodulin -frames 0 -feature angle
 source deactivate

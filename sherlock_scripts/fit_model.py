@@ -47,25 +47,39 @@ which_dataset = args.which_dataset
 frames = args.frames
 feature = args.feature
 
-# Combine n_neighbors and n_components to produce an ID
-ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(frames)
+# List of frame numbers to run
+if which_dataset == 'fspeptide':
+	sampling_range = np.arange(1000, 19001, 500)
+	sampling_range = np.concatenate((np.arange(100, 1000, 100), sampling_range))
+	sampling_range = np.append(sampling_range, 28000)
+if which_dataset == 'apo_calmodulin':
+	sampling_range = np.arange(20000, 30001, 2000)
+	sampling_range = np.concatenate((np.arange(5000, 20000, 1000), sampling_range))
+	sampling_range = np.concatenate((np.arange(1000, 5000, 500), sampling_range))
+	sampling_range = np.concatenate((np.arange(200, 1000, 200), sampling_range))
+	#sampling_range = np.append(sampling_range, 353566)
+#sampling_range = sampling_range[::-1]
 
-# Load appropriate X matrix
-X = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_'+feature+'_' + str(frames) + '.csv', delimiter=',')
+for frames in sampling_range:
+	# Combine n_neighbors and n_components to produce an ID
+	ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(frames)
 
-# Get dimensions of the X matrix
-num_frames = X.shape[0]
-num_features = X.shape[1]
+	# Load appropriate X matrix
+	X = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_'+feature+'_' + str(frames) + '.csv', delimiter=',')
 
-# apply dimensionality reduction, fit the model using sample data and transform all other frames as well
-if method == 'kernelPCA':
-	model = decomposition.KernelPCA(n_components=n_components, kernel='rbf', n_jobs=-1)
-elif method == 'isomap':
-	model = manifold.Isomap(n_neighbors=n_neighbors, n_components=n_components, n_jobs=-1)
-else: # spectral embedding
-	model = manifold.SpectralEmbedding(n_neighbors=n_neighbors, n_components=n_components, n_jobs=-1)
+	# Get dimensions of the X matrix
+	num_frames = X.shape[0]
+	num_features = X.shape[1]
 
-# Fit and save the model
-X_iso_sampled = model.fit(X)
-joblib.dump(model, '/scratch/users/mincheol/' + which_dataset + '/models/' + method + '_model_' + ID + '.pkl')
-print('Model Saved')
+	# apply dimensionality reduction, fit the model using sample data and transform all other frames as well
+	if method == 'kernelPCA':
+		model = decomposition.KernelPCA(n_components=n_components, kernel='rbf', n_jobs=-1)
+	elif method == 'isomap':
+		model = manifold.Isomap(n_neighbors=n_neighbors, n_components=n_components, n_jobs=-1)
+	else: # spectral embedding
+		model = manifold.SpectralEmbedding(n_neighbors=n_neighbors, n_components=n_components, n_jobs=-1)
+
+	# Fit and save the model
+	X_iso_sampled = model.fit(X)
+	joblib.dump(model, '/scratch/users/mincheol/' + which_dataset + '/models/' + method + '_model_' + ID + '.pkl')
+	print('Model Saved')

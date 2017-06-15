@@ -19,14 +19,19 @@ from sklearn.decomposition import PCA
 n_neighbors_set = [40]
 n_components_set = [40]
 #strides = [5000, 15000, 25000] #apo_calmodulin
-strides = [3000, 9000, 15000] #fspeptide
+#strides = [3000, 9000, 15000] #fspeptide
 datasets = ['fspeptide']
 #datasets = ['apo_calmodulin']
-methods = ['isomap', 'kernelPCA']
+methods = ['isomap']
 pc = 4
+sampling_range = np.arange(1000, 19001, 500)
+sampling_range = np.concatenate((np.arange(100, 1000, 100), sampling_range))
+sampling_range = np.append(sampling_range, 28000)
+sampling_range = sampling_range[::-1]
+strides = sampling_range
 
 data_type = ['angle'][0]
-raw = True
+raw = False
 
 for n_components in n_components_set:
 	for which_dataset in datasets:
@@ -39,6 +44,7 @@ for n_components in n_components_set:
 					# Load things
 					if raw:
 						X_rd = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_'+ data_type +'_' + str(stride) + '.csv', delimiter=',')
+						print('open')
 					else:
 						X_rd = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.csv', delimiter=',')
 
@@ -57,6 +63,5 @@ for n_components in n_components_set:
 					# Save the PC coordinates
 					if raw:
 						X_rp.dump('/scratch/users/mincheol/' + which_dataset + '/principal_components/X_pc_raw_' + str(stride) + '_' + str(pc) + '.dat')
-						break
 					else:
 						X_rp.dump('/scratch/users/mincheol/' + which_dataset + '/principal_components/X_pc_'+ method +'_' + ID + '_' + str(pc) + '.dat')

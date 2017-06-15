@@ -44,31 +44,45 @@ which_dataset = args.which_dataset
 frames = args.frames
 feature = args.feature
 
-# Combine n_neighbors and n_components to produce an ID
-ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(frames)
+# List of frame numbers to run
+if which_dataset == 'fspeptide':
+	sampling_range = np.arange(1000, 19001, 500)
+	sampling_range = np.concatenate((np.arange(100, 1000, 100), sampling_range))
+	sampling_range = np.append(sampling_range, 28000)
+if which_dataset == 'apo_calmodulin':
+	sampling_range = np.arange(20000, 30001, 2000)
+	sampling_range = np.concatenate((np.arange(5000, 20000, 1000), sampling_range))
+	sampling_range = np.concatenate((np.arange(1000, 5000, 500), sampling_range))
+	sampling_range = np.concatenate((np.arange(200, 1000, 200), sampling_range))
+	#sampling_range = np.append(sampling_range, 353566)
+#sampling_range = sampling_range[::-1]
 
-# Load appropriate X matrix
-X = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_'+feature+'_' + str(frames) + '.csv', delimiter=',')
-print('Raw data loaded')
+for frames in sampling_range:
+	# Combine n_neighbors and n_components to produce an ID
+	ID = str(n_neighbors) + '_' + str(n_components) + '_' + str(frames)
 
-# Load the appropriate model 
-if which_dataset == 'holo_calmodulin':
-	model = joblib.load('/scratch/users/mincheol/apo_calmodulin/models/' + method + '_model_' + ID + '.pkl')
-else:
-	model = joblib.load('/scratch/users/mincheol/' + which_dataset + '/models/' + method + '_model_' + ID + '.pkl')
-print('Model loaded')
+	# Load appropriate X matrix
+	X = np.loadtxt('/scratch/users/mincheol/' + which_dataset + '/sim_datasets/raw_'+feature+'_' + str(frames) + '.csv', delimiter=',')
+	print('Raw data loaded')
 
-# Transform X matrix in batches
-X_rd = np.empty((X.shape[0], n_components))
-num_batches = 1000
-batch_size = int(X.shape[0]/num_batches) # size of each batch
-for batch in range(num_batches+1):
-	start_idx = batch * batch_size
-	end_idx = (batch + 1)*batch_size if (batch + 1)*batch_size < X.shape[0] else X.shape[0]
-	if start_idx != end_idx:
-		X_rd[start_idx:end_idx, :] = model.transform(X[start_idx:end_idx,:])
+	# Load the appropriate model 
+	if which_dataset == 'holo_calmodulin':
+		model = joblib.load('/scratch/users/mincheol/apo_calmodulin/models/' + method + '_model_' + ID + '.pkl')
+	else:
+		model = joblib.load('/scratch/users/mincheol/' + which_dataset + '/models/' + method + '_model_' + ID + '.pkl')
+	print('Model loaded')
 
-# Saved X in reduced dimension
-np.savetxt('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.csv', X_rd, delimiter=',')
-print('Coordinates saved in reduced dimension')
+	# Transform X matrix in batches
+	X_rd = np.empty((X.shape[0], n_components))
+	num_batches = 1000
+	batch_size = int(X.shape[0]/num_batches) # size of each batch
+	for batch in range(num_batches+1):
+		start_idx = batch * batch_size
+		end_idx = (batch + 1)*batch_size if (batch + 1)*batch_size < X.shape[0] else X.shape[0]
+		if start_idx != end_idx:
+			X_rd[start_idx:end_idx, :] = model.transform(X[start_idx:end_idx,:])
+
+	# Saved X in reduced dimension
+	np.savetxt('/scratch/users/mincheol/' + which_dataset + '/reduced_dimension/X_'+ method +'_' + ID + '.csv', X_rd, delimiter=',')
+	print('Coordinates saved in reduced dimension')
 
