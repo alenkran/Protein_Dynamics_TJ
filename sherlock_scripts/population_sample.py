@@ -62,7 +62,7 @@ if which_dataset == 'apo_calmodulin':
 
 #featurization
 from msmbuilder.featurizer import DihedralFeaturizer
-featurizer = DihedralFeaturizer(types=['phi', 'psi'])
+featurizer = DihedralFeaturizer(types=['phi', 'psi'], sincos=False)
 print(xyz)
 diheds = xyz.fit_transform_with(featurizer, 'diheds/', fmt='dir-npy')
 

@@ -50,3 +50,5 @@ MSM_Builder_Test/clustering_outputs/msm_clustering_labels.dat
 *.xtc
 *.csv
 MSM_Builder_Test/Sherlock_Data/fspeptide/msm/msm.pkl
+*.pkl
+*.pdb
